@@ -101,6 +101,7 @@ app.post("/api/claims", upload.array("documents", 6), (req, res) => {
     latitude,
     longitude,
     language,
+    bilingualData,
   } = req.body;
 
   if (!applicantName || !village || !district || !state || !claimType) {
@@ -143,6 +144,7 @@ app.post("/api/claims", upload.array("documents", 6), (req, res) => {
         ? { lat: parseFloat(latitude), lng: parseFloat(longitude) }
         : null,
     language: language || "en",
+    bilingualData: bilingualData ? JSON.parse(bilingualData) : null,
     documents,
     currentStage: "Gram Sabha",
     status: "Submitted",

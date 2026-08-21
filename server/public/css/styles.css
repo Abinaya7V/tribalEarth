@@ -26,7 +26,7 @@
   --line-soft: #EAE3D0;
 
   --font-display: "Fraunces", Georgia, serif;
-  --font-body: "Work Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: "Work Sans", "Noto Sans", "Noto Sans Bengali", "Noto Sans Devanagari", "Noto Sans Odia", "Noto Sans Telugu", "Noto Sans Ol Chiki", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
 
   --radius-s: 6px;
@@ -628,3 +628,169 @@ html, body{
   .form-card{ padding: 24px 20px 20px; }
   .header-inner{ flex-direction: column; align-items:flex-start; gap: 10px; }
 }
+
+/* ---------- multilingual system & onboarding ---------- */
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.lang-toggle select {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  background-color: var(--paper-raised);
+  border: 1px solid var(--line);
+  padding: 6px 32px 6px 12px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23232A20' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.lang-toggle select:hover {
+  border-color: var(--moss);
+}
+.lang-toggle select:focus-visible {
+  outline: 2px solid var(--ochre);
+}
+
+/* Onboarding modal styling */
+.onboarding-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(35, 42, 32, 0.6);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease);
+}
+.onboarding-modal.is-visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.onboarding-content {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card);
+  max-width: 520px;
+  width: 90%;
+  padding: 36px;
+  text-align: center;
+  transform: translateY(20px);
+  transition: transform 0.3s var(--ease);
+}
+.onboarding-modal.is-visible .onboarding-content {
+  transform: translateY(0);
+}
+.onboarding-content h2 {
+  font-family: var(--font-display);
+  color: var(--forest-dark);
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 26px;
+}
+.onboarding-content p {
+  color: var(--ink-soft);
+  font-size: 15px;
+  margin-bottom: 28px;
+}
+.onboarding-languages {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.onboarding-lang-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.onboarding-lang-card:hover {
+  border-color: var(--moss);
+  background: var(--paper-raised);
+}
+.onboarding-lang-card.is-selected {
+  background: var(--ochre-soft);
+  border-color: var(--ochre);
+}
+.onboarding-lang-card .native-name {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 16.5px;
+  color: var(--ink);
+}
+.onboarding-lang-card .eng-name {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+.onboarding-content .btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+}
+
+/* RTL Layout support */
+html[dir="rtl"] {
+  text-align: right;
+}
+html[dir="rtl"] .form-nav-right {
+  margin-left: 0;
+  margin-right: auto;
+}
+html[dir="rtl"] .btn-ghost {
+  order: 2;
+}
+html[dir="rtl"] .form-nav-right {
+  order: 1;
+}
+html[dir="rtl"] .claim-type-option {
+  text-align: right;
+}
+html[dir="rtl"] .stepper {
+  border-left: none;
+  border-right: 1px solid var(--line);
+  padding-left: 0;
+  padding-right: 20px;
+}
+html[dir="rtl"] .step-dot {
+  left: auto;
+  right: -31px;
+}
+html[dir="rtl"] .claim-drawer {
+  left: 0;
+  right: auto;
+  transform: translateX(-100%);
+  box-shadow: 8px 0 32px rgba(35,42,32,0.14);
+}
+html[dir="rtl"] .claim-drawer.is-open {
+  transform: translateX(0);
+}
+html[dir="rtl"] .drawer-close {
+  left: 20px;
+  right: auto;
+}
+html[dir="rtl"] .site-header .header-inner {
+  flex-direction: row-reverse;
+}
+html[dir="rtl"] .site-header .tab-nav {
+  flex-direction: row-reverse;
+}
+

@@ -1,0 +1,144 @@
+{
+  "header": {
+    "title": "TribalEarth AI",
+    "sub": "Forest Rights Claim Register",
+    "nav": {
+      "file": "File a Claim",
+      "register": "Claims Register"
+    }
+  },
+  "stepper": {
+    "step1": {
+      "title": "Applicant & Village",
+      "desc": "Who is filing, and where"
+    },
+    "step2": {
+      "title": "Land & Claim Type",
+      "desc": "IFR, CR, or CFR details"
+    },
+    "step3": {
+      "title": "Supporting Documents",
+      "desc": "Evidence of occupation"
+    },
+    "step4": {
+      "title": "Review & Submit",
+      "desc": "Confirm before filing"
+    },
+    "note": "Every claim is recorded the moment it is filed at Gram Sabha level — nothing here overrides the Gram Sabha's decision."
+  },
+  "form": {
+    "step1": {
+      "legend": "Applicant & Village Details",
+      "applicant": "Applicant's full name",
+      "guardian": "Father's / Husband's name",
+      "village": "Village",
+      "gp": "Gram Panchayat",
+      "district": "District",
+      "state": "State",
+      "stateCode": "State code",
+      "stateCodeHint": "(2 letters, for claim ID)"
+    },
+    "step2": {
+      "legend": "Land & Claim Type",
+      "ifrTitle": "Individual Forest Right",
+      "ifrDesc": "Right to live & cultivate forest land for livelihood",
+      "crTitle": "Community Right",
+      "crDesc": "Shared community access & use rights",
+      "cfrTitle": "Community Forest Resource",
+      "cfrDesc": "Collective right to protect, manage & govern forest",
+      "landDesc": "Description of land / boundary",
+      "cultivationYears": "Years of cultivation / occupation",
+      "lat": "Latitude",
+      "lng": "Longitude",
+      "optional": "(optional)"
+    },
+    "step3": {
+      "legend": "Supporting Documents",
+      "help": "Photos of residence proof, cultivation evidence, or any existing record. Up to 6 files, 8MB each.",
+      "dropzone": "Tap to add photos",
+      "dropzoneOr": "or drag files here"
+    },
+    "step4": {
+      "legend": "Review & Submit",
+      "help": "Please confirm the details below with the applicant before filing at Gram Sabha."
+    },
+    "buttons": {
+      "back": "Back",
+      "continue": "Continue",
+      "submit": "File Claim at Gram Sabha"
+    },
+    "review": {
+      "applicant": "Applicant",
+      "guardian": "Father's / Husband's name",
+      "village": "Village",
+      "gp": "Gram Panchayat",
+      "district": "District",
+      "state": "State",
+      "claimType": "Claim type",
+      "cultivationYears": "Years of cultivation",
+      "location": "Location",
+      "locationNotProvided": "Not provided",
+      "docsAttached": "Documents attached",
+      "landDesc": "Land description"
+    },
+    "validation": {
+      "required": "Please fill in \"{field}\".",
+      "type": "Please select a claim type — IFR, CR, or CFR."
+    },
+    "status": {
+      "filing": "Filing…",
+      "success": "Filed successfully — Claim ID {id}"
+    }
+  },
+  "register": {
+    "search": "Search by name, village, or claim ID…",
+    "filterTypeAll": "All claim types",
+    "filterStageAll": "All stages",
+    "refresh": "Refresh",
+    "loading": "Loading claims…",
+    "loadError": "Could not load claims — is the server running?",
+    "empty": "No claims filed yet — file one from the \"File a Claim\" tab.",
+    "table": {
+      "id": "Claim ID",
+      "applicant": "Applicant",
+      "village": "Village",
+      "type": "Type",
+      "stage": "Stage",
+      "date": "Filed on"
+    },
+    "stats": {
+      "total": "Total claims",
+      "gramSabha": "At Gram Sabha",
+      "sdlc": "At SDLC",
+      "dlc": "At DLC",
+      "cfr": "CFR claims"
+    }
+  },
+  "drawer": {
+    "close": "Close",
+    "loading": "Loading…",
+    "titleDetails": "Claim details",
+    "titleDocs": "Supporting documents",
+    "titleAudit": "Audit trail",
+    "labelType": "Type",
+    "labelStage": "Current stage",
+    "labelYears": "Cultivation years",
+    "labelLocation": "Location",
+    "locationNotProvided": "Not provided",
+    "noDocs": "No documents attached",
+    "finalStage": "This claim has reached its final stage (DLC).",
+    "advanceBtn": "Forward to {stage}",
+    "advancing": "Forwarding…",
+    "timeline": {
+      "submitted": "Claim submitted",
+      "submittedNote": "Claim filed and recorded at Gram Sabha level.",
+      "forwarded": "Forwarded",
+      "forwardedNote": "Claim forwarded to {stage}."
+    }
+  },
+  "onboarding": {
+    "title": "Welcome to TribalEarth AI",
+    "desc": "Select your language to access the Forest Rights Act (FRA) claim management platform.",
+    "start": "Get Started"
+  }
+}
