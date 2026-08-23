@@ -20,6 +20,17 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const { customAlphabet } = require("nanoid");
+const bhashiniService = require("./services/bhashiniService");
+const { extractClaimFields } = require("./services/extractionService");
+
+// Load .env if present (Node 22 built-in — no dotenv dependency needed).
+// Safe to call even when the file doesn't exist.
+try {
+  process.loadEnvFile(path.join(__dirname, ".env"));
+} catch (err) {
+  // No .env file — that's fine, voice endpoints will honestly report
+  // "not configured" instead of silently failing later.
+}
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -61,6 +72,25 @@ const upload = multer({
   storage,
   limits: { fileSize: 8 * 1024 * 1024 }, // 8MB per file
 });
+
+// Audio recordings for voice input are transient — never written to
+// disk. Kept in memory only for the duration of the request, then
+// discarded (Section 7: "do not permanently store raw voice
+// recordings unless explicitly required" — this project doesn't
+// require it, so it simply never happens).
+const audioUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB per clip
+});
+const ALLOWED_AUDIO_MIME_TYPES = [
+  "audio/webm",
+  "audio/wav",
+  "audio/wave",
+  "audio/x-wav",
+  "audio/ogg",
+  "audio/mp4",
+  "audio/mpeg",
+];
 
 app.use(cors());
 app.use(express.json());
@@ -257,6 +287,100 @@ app.get("/api/stats", (req, res) => {
     return acc;
   }, {});
   res.json({ total: claims.length, byStage, byType });
+});
+
+// ---------- voice endpoints ----------
+// Architecture: Browser -> this Express backend -> Bhashini -> back.
+// The frontend never holds a Bhashini API key. If Bhashini isn't
+// configured (see .env.example), these endpoints say so honestly —
+// they never return a fabricated transcript or audio clip.
+
+const SUPPORTED_VOICE_LANGUAGES = ["en", "hi", "bn", "or", "te", "sat"];
+
+/**
+ * GET /api/voice/status
+ * Lets the frontend check ONCE (and cache) whether Bhashini is
+ * configured, instead of attempting a real transcribe/tts call
+ * every single time and waiting for it to fail. That avoided
+ * round-trip is also what fixes a real bug: delaying the browser's
+ * speechSynthesis.speak() call behind a doomed network request was
+ * pushing it far enough from the user's click that Chrome would
+ * sometimes silently drop the audio.
+ */
+app.get("/api/voice/status", (req, res) => {
+  res.json({ configured: bhashiniService.isConfigured() });
+});
+
+/**
+ * POST /api/voice/transcribe
+ * multipart/form-data: audio (file), language (string)
+ */
+app.post("/api/voice/transcribe", audioUpload.single("audio"), async (req, res) => {
+  const { language } = req.body;
+
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: "No audio file received." });
+  }
+  if (!ALLOWED_AUDIO_MIME_TYPES.includes(req.file.mimetype)) {
+    return res.status(400).json({
+      success: false,
+      error: `Unsupported audio format: ${req.file.mimetype}`,
+    });
+  }
+  if (!language || !SUPPORTED_VOICE_LANGUAGES.includes(language)) {
+    return res.status(400).json({
+      success: false,
+      error: `language must be one of ${SUPPORTED_VOICE_LANGUAGES.join(", ")}`,
+    });
+  }
+
+  const result = await bhashiniService.transcribeAudio(req.file.buffer, req.file.mimetype, language);
+  // req.file.buffer is not written anywhere and is discarded once this
+  // function returns — nothing here persists the recording.
+
+  if (!result.success) {
+    return res.status(result.configured ? 502 : 503).json(result);
+  }
+  res.json(result);
+});
+
+/**
+ * POST /api/voice/extract
+ * body: { text, language, context }
+ * Rule-based structured extraction — see services/extractionService.js
+ * for exactly how each field is matched. Never guesses: unmatched
+ * fields come back null.
+ */
+app.post("/api/voice/extract", express.json(), (req, res) => {
+  const { text, language } = req.body || {};
+  if (!text || typeof text !== "string") {
+    return res.status(400).json({ success: false, error: "Missing 'text' in request body." });
+  }
+  const { fields } = extractClaimFields(text);
+  res.json({ success: true, language: language || null, fields });
+});
+
+/**
+ * POST /api/voice/tts
+ * body: { text, language }
+ */
+app.post("/api/voice/tts", express.json(), async (req, res) => {
+  const { text, language } = req.body || {};
+  if (!text || typeof text !== "string") {
+    return res.status(400).json({ success: false, error: "Missing 'text' in request body." });
+  }
+  if (!language || !SUPPORTED_VOICE_LANGUAGES.includes(language)) {
+    return res.status(400).json({
+      success: false,
+      error: `language must be one of ${SUPPORTED_VOICE_LANGUAGES.join(", ")}`,
+    });
+  }
+
+  const result = await bhashiniService.synthesizeSpeech(text, language);
+  if (!result.success) {
+    return res.status(result.configured ? 502 : 503).json(result);
+  }
+  res.json(result);
 });
 
 // ---------- centralized error handler ----------

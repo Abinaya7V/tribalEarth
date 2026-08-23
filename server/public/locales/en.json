@@ -36,7 +36,14 @@
       "district": "District",
       "state": "State",
       "stateCode": "State code",
-      "stateCodeHint": "(2 letters, for claim ID)"
+      "stateCodeHint": "(2 letters, for claim ID)",
+      "applicantPlaceholder": "e.g. Ramesh Netam",
+      "guardianPlaceholder": "e.g. Sukhram Netam",
+      "villagePlaceholder": "e.g. Kanker",
+      "gpPlaceholder": "e.g. Kanker GP",
+      "districtPlaceholder": "e.g. Kanker",
+      "statePlaceholder": "e.g. Chhattisgarh",
+      "stateCodePlaceholder": "e.g. CG"
     },
     "step2": {
       "legend": "Land & Claim Type",
@@ -50,7 +57,11 @@
       "cultivationYears": "Years of cultivation / occupation",
       "lat": "Latitude",
       "lng": "Longitude",
-      "optional": "(optional)"
+      "optional": "(optional)",
+      "landDescPlaceholder": "e.g. Plot east of Kanker stream, bordered by sal forest to the north",
+      "cultivationYearsPlaceholder": "e.g. 12",
+      "latPlaceholder": "e.g. 20.2734",
+      "lngPlaceholder": "e.g. 81.4930"
     },
     "step3": {
       "legend": "Supporting Documents",
@@ -140,5 +151,46 @@
     "title": "Welcome to TribalEarth AI",
     "desc": "Select your language to access the Forest Rights Act (FRA) claim management platform.",
     "start": "Get Started"
+  },
+  "voice": {
+    "fillUsingVoice": "Fill Using Voice",
+    "micLabel": "Speak this field",
+    "listenLabel": "Listen",
+    "state": {
+      "ready": "Tap the mic and speak",
+      "listening": "Listening…",
+      "processing": "Processing…",
+      "success": "Got it",
+      "error": "Something went wrong. Please try again or type instead.",
+      "noSpeech": "We didn't catch that — please try again.",
+      "micDenied": "Microphone access was denied. Please allow microphone access, or type instead.",
+      "unsupportedLanguage": "Voice input isn't available for this language yet — please type instead.",
+      "serviceUnavailable": "Voice service is not configured — please type instead.",
+      "speaking": "Speaking…"
+    },
+    "guided": {
+      "title": "Fill Using Voice",
+      "intro": "We'll ask for a few details, one at a time. Speak clearly after each question.",
+      "askApplicant": "Please tell us the applicant's name.",
+      "askGuardian": "Now tell us the father's or husband's name.",
+      "askVillage": "What is the village?",
+      "askGramPanchayat": "What is the Gram Panchayat?",
+      "askDistrict": "What is the district?",
+      "askState": "What is the state?",
+      "askClaimType": "Is this an Individual Forest Right, a Community Right, or a Community Forest Resource claim?",
+      "askLandDescription": "Please describe the land or its boundary.",
+      "askCultivationYears": "For how many years have you cultivated this land?",
+      "done": "That's everything — please review what we understood below.",
+      "understood": "We understood:",
+      "applyToForm": "Apply to Form",
+      "editFirst": "Edit First",
+      "keepCurrent": "Keep Current",
+      "replace": "Replace",
+      "current": "Current",
+      "detected": "Detected",
+      "cancel": "Cancel",
+      "skip": "Skip this question",
+      "allSet": "All set — your answers are already filled in."
+    }
   }
 }

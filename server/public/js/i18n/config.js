@@ -94,7 +94,29 @@
         el.placeholder = trans;
       }
     });
+
+    // 3. title attributes (tooltips)
+    document.querySelectorAll("[data-i18n-title]").forEach(el => {
+      const key = el.getAttribute("data-i18n-title");
+      const trans = window.t(key);
+      if (trans !== key) {
+        el.title = trans;
+      }
+    });
+
+    // 4. aria-label attributes (screen readers / accessible names)
+    document.querySelectorAll("[data-i18n-aria-label]").forEach(el => {
+      const key = el.getAttribute("data-i18n-aria-label");
+      const trans = window.t(key);
+      if (trans !== key) {
+        el.setAttribute("aria-label", trans);
+      }
+    });
   }
+
+  // Exposed so other modules (e.g. voice.js) can re-run localization
+  // after they dynamically insert new elements with data-i18n* attributes.
+  window.applyDOMTranslations = applyDOMTranslations;
 
   // Get current language code
   window.getCurrentLanguage = function() {

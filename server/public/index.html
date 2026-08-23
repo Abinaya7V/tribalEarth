@@ -82,6 +82,7 @@
         </ol>
 
         <p class="stepper-note" data-i18n="stepper.note">Every claim is recorded the moment it is filed at Gram&nbsp;Sabha level — nothing here overrides the Gram Sabha's decision.</p>
+        <button type="button" id="listenStepperNoteBtn" class="btn btn-ghost btn-sm listen-btn" data-listen-target="stepper.note" data-i18n-title="voice.listenLabel" data-i18n-aria-label="voice.listenLabel" title="Listen">🔊 <span data-i18n="voice.listenLabel">Listen</span></button>
       </aside>
 
       <!-- Form card -->
@@ -90,32 +91,53 @@
 
           <!-- STEP 1 -->
           <fieldset class="form-step is-active" data-step="1">
-            <legend class="step-legend"><span class="step-legend-index">01</span><span data-i18n="form.step1.legend">Applicant &amp; Village Details</span></legend>
+            <legend class="step-legend">
+              <span class="step-legend-index">01</span><span data-i18n="form.step1.legend">Applicant &amp; Village Details</span>
+              <button type="button" id="fillUsingVoiceBtn" class="btn btn-ghost btn-sm voice-guided-btn" data-i18n="voice.fillUsingVoice" data-i18n-title="voice.fillUsingVoice">Fill Using Voice</button>
+            </legend>
 
             <div class="field-grid">
               <div class="field">
                 <label for="applicantName"><span data-i18n="form.step1.applicant">Applicant's full name</span> <span class="req">*</span></label>
-                <input type="text" id="applicantName" name="applicantName" required placeholder="e.g. Ramesh Netam" data-i18n-placeholder="form.step1.applicantPlaceholder">
+                <div class="field-input-row">
+                  <input type="text" id="applicantName" name="applicantName" required placeholder="e.g. Ramesh Netam" data-i18n-placeholder="form.step1.applicantPlaceholder">
+                  <button type="button" class="mic-btn" data-mic-target="applicantName" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
+                </div>
               </div>
               <div class="field">
                 <label for="guardianName" data-i18n="form.step1.guardian">Father's / Husband's name</label>
-                <input type="text" id="guardianName" name="guardianName" placeholder="e.g. Sukhram Netam" data-i18n-placeholder="form.step1.guardianPlaceholder">
+                <div class="field-input-row">
+                  <input type="text" id="guardianName" name="guardianName" placeholder="e.g. Sukhram Netam" data-i18n-placeholder="form.step1.guardianPlaceholder">
+                  <button type="button" class="mic-btn" data-mic-target="guardianName" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
+                </div>
               </div>
               <div class="field">
                 <label for="village"><span data-i18n="form.step1.village">Village</span> <span class="req">*</span></label>
-                <input type="text" id="village" name="village" required placeholder="e.g. Kanker" data-i18n-placeholder="form.step1.villagePlaceholder">
+                <div class="field-input-row">
+                  <input type="text" id="village" name="village" required placeholder="e.g. Kanker" data-i18n-placeholder="form.step1.villagePlaceholder">
+                  <button type="button" class="mic-btn" data-mic-target="village" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
+                </div>
               </div>
               <div class="field">
                 <label for="gramPanchayat" data-i18n="form.step1.gp">Gram Panchayat</label>
-                <input type="text" id="gramPanchayat" name="gramPanchayat" placeholder="e.g. Kanker GP" data-i18n-placeholder="form.step1.gpPlaceholder">
+                <div class="field-input-row">
+                  <input type="text" id="gramPanchayat" name="gramPanchayat" placeholder="e.g. Kanker GP" data-i18n-placeholder="form.step1.gpPlaceholder">
+                  <button type="button" class="mic-btn" data-mic-target="gramPanchayat" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
+                </div>
               </div>
               <div class="field">
                 <label for="district"><span data-i18n="form.step1.district">District</span> <span class="req">*</span></label>
-                <input type="text" id="district" name="district" required placeholder="e.g. Kanker" data-i18n-placeholder="form.step1.districtPlaceholder">
+                <div class="field-input-row">
+                  <input type="text" id="district" name="district" required placeholder="e.g. Kanker" data-i18n-placeholder="form.step1.districtPlaceholder">
+                  <button type="button" class="mic-btn" data-mic-target="district" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
+                </div>
               </div>
               <div class="field">
                 <label for="state"><span data-i18n="form.step1.state">State</span> <span class="req">*</span></label>
-                <input type="text" id="state" name="state" required placeholder="e.g. Chhattisgarh" data-i18n-placeholder="form.step1.statePlaceholder">
+                <div class="field-input-row">
+                  <input type="text" id="state" name="state" required placeholder="e.g. Chhattisgarh" data-i18n-placeholder="form.step1.statePlaceholder">
+                  <button type="button" class="mic-btn" data-mic-target="state" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
+                </div>
               </div>
               <div class="field">
                 <label for="stateCode"><span data-i18n="form.step1.stateCode">State code</span> <span class="hint" data-i18n="form.step1.stateCodeHint">(2 letters, for claim ID)</span></label>
@@ -158,7 +180,10 @@
             <div class="field-grid">
               <div class="field field-span2">
                 <label for="landDescription" data-i18n="form.step2.landDesc">Description of land / boundary</label>
-                <textarea id="landDescription" name="landDescription" rows="3" placeholder="e.g. Plot east of Kanker stream, bordered by sal forest to the north" data-i18n-placeholder="form.step2.landDescPlaceholder"></textarea>
+                <div class="field-input-row field-input-row-textarea">
+                  <textarea id="landDescription" name="landDescription" rows="3" placeholder="e.g. Plot east of Kanker stream, bordered by sal forest to the north" data-i18n-placeholder="form.step2.landDescPlaceholder"></textarea>
+                  <button type="button" class="mic-btn" data-mic-target="landDescription" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
+                </div>
               </div>
               <div class="field">
                 <label for="yearsOfCultivation" data-i18n="form.step2.cultivationYears">Years of cultivation / occupation</label>
@@ -272,9 +297,36 @@
   </div>
 </div>
 
+<!-- Voice status pill: shows ready/listening/processing/success/error states -->
+<div id="voiceStatusPill" class="voice-status-pill" aria-live="polite" hidden>
+  <span id="voiceStatusIcon" class="voice-status-icon">●</span>
+  <span id="voiceStatusText" class="voice-status-text"></span>
+</div>
+
+<!-- Guided "Fill Using Voice" modal -->
+<div id="voiceGuidedOverlay" class="drawer-overlay"></div>
+<div id="voiceGuidedModal" class="voice-guided-modal" aria-hidden="true" role="dialog" aria-labelledby="voiceGuidedTitle">
+  <div class="voice-guided-content">
+    <button type="button" id="voiceGuidedClose" class="drawer-close" aria-label="Close">✕</button>
+    <h2 id="voiceGuidedTitle" data-i18n="voice.guided.title">Fill Using Voice</h2>
+    <p id="voiceGuidedIntro" data-i18n="voice.guided.intro">We'll ask for a few details, one at a time. Speak clearly after each question.</p>
+
+    <div id="voiceGuidedQuestion" class="voice-guided-question"></div>
+    <div id="voiceGuidedStatus" class="voice-guided-status"></div>
+
+    <div id="voiceGuidedReview" class="voice-guided-review" hidden></div>
+
+    <div class="voice-guided-actions">
+      <button type="button" id="voiceGuidedSkip" class="btn btn-ghost btn-sm" data-i18n="voice.guided.skip">Skip this question</button>
+      <button type="button" id="voiceGuidedMic" class="btn btn-primary voice-guided-mic">🎙️</button>
+    </div>
+  </div>
+</div>
+
 <script src="/js/i18n/languages.js"></script>
 <script src="/js/i18n/config.js"></script>
 <script src="/js/i18n/bilingual.js"></script>
 <script src="/js/app.js"></script>
+<script src="/js/voice.js"></script>
 </body>
 </html>
