@@ -202,6 +202,14 @@ function buildReview() {
 /* ---------------- submit ---------------- */
 claimForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  if (!window.Auth || !window.Auth.hasRole("applicant")) {
+    formMsg.className = "form-msg";
+    formMsg.textContent = window.t("form.status.loginRequired", "Please log in as an applicant to file a claim.");
+    if (window.Auth) window.Auth.openLoginModal();
+    return;
+  }
+
   submitBtn.disabled = true;
   submitBtn.textContent = window.t("form.status.filing", "Filing…");
   formMsg.className = "form-msg";
@@ -233,7 +241,7 @@ claimForm.addEventListener("submit", async (e) => {
   selectedFiles.forEach((f) => fd.append("documents", f));
 
   try {
-    const res = await fetch(`${API_BASE}/claims`, { method: "POST", body: fd });
+    const res = await window.Auth.authFetch(`${API_BASE}/claims`, { method: "POST", body: fd });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Submission failed.");
 

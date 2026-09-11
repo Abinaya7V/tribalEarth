@@ -23,6 +23,11 @@
       </div>
     </div>
     <div class="header-actions">
+      <div id="sessionStatus" class="session-status">
+        <span id="sessionLabel" class="session-label" hidden></span>
+        <button id="loginBtn" class="btn btn-ghost btn-sm">Log in</button>
+        <button id="logoutBtn" class="btn btn-ghost btn-sm" hidden>Log out</button>
+      </div>
       <label class="lang-toggle" title="Interface language">
         <span class="sr-only">Language</span>
         <select id="langSelect">
@@ -38,6 +43,9 @@
     </button>
     <button class="tab-btn" data-tab="register" role="tab" aria-selected="false">
       <span class="tab-index">02</span> <span data-i18n="header.nav.register">Claims Register</span>
+    </button>
+    <button class="tab-btn" data-tab="officials" role="tab" aria-selected="false">
+      <span class="tab-index">03</span> Officials Review
     </button>
   </nav>
 </header>
@@ -278,6 +286,51 @@
     </div>
   </section>
 
+  <!-- ============ TAB: OFFICIALS REVIEW (Module 3) ============ -->
+  <section id="tab-officials" class="tab-panel">
+    <div class="officials-note">
+      This view is for Gram Sabha / SDLC / DLC officials only, and requires
+      logging in with the matching role. AI classification below is a
+      <strong>suggestion to speed up review</strong> — it does not verify
+      document authenticity or detect fraud, and nothing counts toward the
+      Rule 13 checklist until an officer explicitly confirms it.
+    </div>
+
+    <div id="officialsLoginPrompt" class="officials-login-prompt">
+      <p>Log in as a Gram Sabha, SDLC, or DLC officer to review claims.</p>
+      <button id="officialsLoginBtn" class="btn btn-primary btn-sm">Log in</button>
+    </div>
+
+    <div id="officialsPanel" class="officials-panel" hidden>
+      <div class="register-toolbar">
+        <div class="register-filters">
+          <select id="officialsStageSelect"></select>
+          <button id="officialsRefreshBtn" class="btn btn-ghost btn-sm">Refresh</button>
+        </div>
+      </div>
+
+      <div class="stats-strip" id="officialsStatsStrip"></div>
+
+      <div class="ledger-wrap">
+        <table class="ledger" id="officialsLedgerTable">
+          <thead>
+            <tr>
+              <th>Claim ID</th>
+              <th>Applicant</th>
+              <th>Village</th>
+              <th>Type</th>
+              <th>Days Pending</th>
+              <th>SLA</th>
+            </tr>
+          </thead>
+          <tbody id="officialsLedgerBody">
+            <tr class="ledger-empty"><td colspan="6">Loading queue…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- Detail drawer -->
@@ -286,6 +339,38 @@
   <button id="drawerClose" class="drawer-close" aria-label="Close" data-i18n="drawer.close">✕</button>
   <div id="drawerContent" class="drawer-content"></div>
 </aside>
+
+<!-- Officials review drawer (Module 3) — separate from the citizen drawer above -->
+<div id="officialsDrawerOverlay" class="drawer-overlay"></div>
+<aside id="officialsDrawer" class="claim-drawer officials-drawer" aria-hidden="true">
+  <button id="officialsDrawerClose" class="drawer-close" aria-label="Close">✕</button>
+  <div id="officialsDrawerContent" class="drawer-content"></div>
+</aside>
+
+<!-- Login modal -->
+<div id="loginOverlay" class="drawer-overlay"></div>
+<div id="loginModal" class="login-modal" aria-hidden="true" role="dialog" aria-labelledby="loginTitle">
+  <button id="loginModalClose" class="drawer-close" aria-label="Close">✕</button>
+  <h2 id="loginTitle">Log in</h2>
+  <p class="login-modal-sub">TribalEarth AI uses separate logins per role — Applicant, Gram Sabha, SDLC, and DLC each see and can act on only what's theirs.</p>
+  <form id="loginForm">
+    <div class="field">
+      <label for="loginUsername">Username</label>
+      <input type="text" id="loginUsername" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" autocomplete="current-password" required>
+    </div>
+    <div id="loginError" class="login-error" hidden></div>
+    <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Log in</button>
+  </form>
+  <div class="login-demo-hint">
+    <strong>Demo accounts</strong> (see README for details):<br>
+    applicant1 / applicant123 &middot; gramsabha1 / gramsabha123 &middot;
+    sdlc1 / sdlc123 &middot; dlc1 / dlc123
+  </div>
+</div>
 
 <!-- Onboarding Modal -->
 <div id="onboardingModal" class="onboarding-modal" aria-hidden="true" role="dialog" aria-labelledby="onboardingTitle">
@@ -326,7 +411,9 @@
 <script src="/js/i18n/languages.js"></script>
 <script src="/js/i18n/config.js"></script>
 <script src="/js/i18n/bilingual.js"></script>
+<script src="/js/auth.js"></script>
 <script src="/js/app.js"></script>
 <script src="/js/voice.js"></script>
+<script src="/js/officials.js"></script>
 </body>
 </html>

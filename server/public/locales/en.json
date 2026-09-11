@@ -98,7 +98,8 @@
     },
     "status": {
       "filing": "Filing…",
-      "success": "Filed successfully — Claim ID {id}"
+      "success": "Filed successfully — Claim ID {id}",
+      "loginRequired": "Please log in as an applicant to file a claim."
     }
   },
   "register": {

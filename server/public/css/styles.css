@@ -747,6 +747,131 @@ html, body{
 .voice-review-conflict label{ display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .voice-review-final-actions{ display: flex; gap: 12px; }
 
+/* ---------- auth: session status & login modal ---------- */
+.header-actions{ display: flex; align-items: center; gap: 14px; }
+.session-status{ display: flex; align-items: center; gap: 10px; }
+.session-label{
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--forest-dark);
+  background: var(--moss-soft);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.login-modal{
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(.96);
+  width: min(420px, 92vw);
+  background: var(--paper-raised);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-drawer);
+  padding: 32px 30px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s var(--ease), transform .2s var(--ease);
+  z-index: 70;
+}
+.login-modal.is-open{ opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+.login-modal h2{ font-family: var(--font-display); font-size: 24px; color: var(--forest-dark); margin: 4px 0 8px; }
+.login-modal-sub{ font-size: 13px; color: var(--ink-soft); margin-bottom: 20px; line-height: 1.5; }
+#loginForm{ display: flex; flex-direction: column; gap: 14px; }
+#loginForm .field input{
+  font-family: var(--font-body); font-size: 14px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: var(--radius-s); background: var(--paper); width: 100%;
+}
+.login-error{ font-size: 13px; color: var(--clay); }
+.login-demo-hint{
+  margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line);
+  font-size: 11.5px; color: var(--ink-faint); line-height: 1.6;
+}
+
+/* ---------- Module 3: Officials Review ---------- */
+.officials-note{
+  background: var(--ochre-soft);
+  border: 1px solid var(--ochre);
+  border-radius: var(--radius-m);
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.officials-login-prompt{
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink-soft);
+}
+.officials-login-prompt p{ margin-bottom: 16px; font-size: 14px; }
+
+.sla-badge{
+  font-size: 12px; font-weight: 600; padding: 4px 10px;
+  border-radius: 999px; border: 1px solid var(--line); color: var(--forest-dark);
+}
+.sla-badge.sla-overdue{ border-color: var(--clay); background: var(--clay-soft); color: var(--clay); }
+.escalated-badge{
+  margin-left: 8px; font-size: 11px; font-weight: 700; color: var(--clay);
+  background: var(--clay-soft); padding: 2px 8px; border-radius: 999px;
+}
+
+.prior-rejection-banner{
+  background: var(--clay-soft);
+  border: 1px solid var(--clay);
+  border-radius: var(--radius-m);
+  padding: 14px 16px;
+  margin: 14px 0 20px;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.prior-rejection-banner p{ margin: 8px 0 0; font-style: italic; }
+
+.officials-drawer .drawer-content{ padding-bottom: 20px; }
+.officials-drawer-note{ font-size: 12.5px; color: var(--ink-faint); margin: -6px 0 14px; }
+
+.doc-review-card{
+  border: 1px solid var(--line-soft); border-radius: var(--radius-s);
+  padding: 12px 14px; margin-bottom: 12px;
+}
+.doc-review-header a{ font-weight: 600; font-size: 13.5px; color: var(--forest-dark); }
+.classify-btn{ margin-top: 8px; }
+.classify-error{ font-size: 12.5px; color: var(--clay); margin: 6px 0; }
+
+.doc-classification{ margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.doc-category{ font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.confidence-tag{ font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--ink-faint); }
+.doc-flags{ display: flex; gap: 12px; font-size: 12.5px; }
+.match-ok{ color: var(--forest); }
+.match-bad{ color: var(--clay); }
+
+.doc-confirm-toggle{ display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.confirmed-by{ font-weight: 400; color: var(--ink-faint); font-size: 12px; }
+
+.rule13-checklist{ list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rule13-checklist li{ font-size: 13px; padding: 6px 10px; border-radius: var(--radius-s); }
+.rule13-checklist .rule13-covered{ background: var(--moss-soft); color: var(--forest-dark); }
+.rule13-checklist .rule13-missing{ background: var(--paper); color: var(--ink-faint); border: 1px dashed var(--line); }
+.rule13-summary{ font-size: 12.5px; color: var(--ink-soft); }
+
+.decision-actions{ display: flex; gap: 12px; }
+.decision-reject-btn{ border-color: var(--clay); color: var(--clay); }
+.decision-reject-btn:hover{ background: var(--clay-soft); }
+
+.reject-panel{
+  margin-top: 14px; border: 1px solid var(--clay); background: var(--clay-soft);
+  border-radius: var(--radius-m); padding: 14px; display: flex; flex-direction: column; gap: 10px;
+}
+.reject-panel label{ font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.reject-panel textarea{
+  font-family: var(--font-body); font-size: 13.5px; padding: 10px;
+  border: 1px solid var(--line); border-radius: var(--radius-s); resize: vertical;
+}
+.reject-panel-hint{ font-size: 12px; color: var(--ink-soft); font-style: italic; margin: 0; }
+.reject-panel-actions{ display: flex; gap: 10px; }
+
+.decision-msg{ margin-top: 12px; font-size: 13px; font-weight: 600; }
+.decision-msg.is-success{ color: var(--forest); }
+.decision-msg.is-error{ color: var(--clay); }
+
 /* ---------- responsive ---------- */
 @media (max-width: 880px){
   .filing-layout{ grid-template-columns: 1fr; }
