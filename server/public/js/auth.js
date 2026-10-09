@@ -75,15 +75,77 @@
     if (!label || !loginBtn || !logoutBtn) return;
 
     const session = getSession();
+    const appContainer = document.getElementById("appContainer");
+    const landingContainer = document.getElementById("landingContainer");
+
     if (session) {
       label.hidden = false;
       label.textContent = `${session.displayName} · ${ROLE_LABELS[session.role] || session.role}`;
       loginBtn.hidden = true;
       logoutBtn.hidden = false;
+      
+      applyAuthView(session);
+      applyRoleVisibility(session ? session.role : null);
     } else {
       label.hidden = true;
       loginBtn.hidden = false;
       logoutBtn.hidden = true;
+      
+      applyAuthView(session);
+      applyRoleVisibility(session ? session.role : null);
+    }
+  }
+
+  function applyAuthView(session) {
+    const appContainer = document.getElementById("appContainer");
+    const landingContainer = document.getElementById("landingContainer");
+
+    if (session) {
+      if (appContainer) {
+        appContainer.hidden = false;
+        appContainer.style.display = ""; // Let CSS take over
+      }
+      if (landingContainer) {
+        landingContainer.hidden = true;
+        landingContainer.style.display = "none";
+      }
+    } else {
+      if (appContainer) {
+        appContainer.hidden = true;
+        appContainer.style.display = "none";
+      }
+      if (landingContainer) {
+        landingContainer.hidden = false;
+        landingContainer.style.display = ""; // Let CSS take over
+      }
+    }
+  }
+
+  function applyRoleVisibility(role) {
+    const tabFile = document.querySelector('.tab-btn[data-tab="file"]');
+    const tabRegister = document.querySelector('.tab-btn[data-tab="register"]');
+    const tabOfficials = document.querySelector('.tab-btn[data-tab="officials"]');
+    
+    if (!tabFile || !tabRegister || !tabOfficials) return;
+
+    if (!role || role === 'applicant') {
+      tabFile.style.display = '';
+      tabRegister.style.display = '';
+      tabOfficials.style.display = 'none';
+    } else {
+      // Officer roles (gram_sabha, sdlc, dlc)
+      tabFile.style.display = 'none';
+      tabRegister.style.display = '';
+      tabOfficials.style.display = '';
+    }
+
+    // Fallback to activate first visible tab if active tab becomes hidden
+    const activeTabBtn = document.querySelector('.tab-btn.is-active');
+    if (activeTabBtn && activeTabBtn.style.display === 'none') {
+      const visibleTabs = [tabFile, tabRegister, tabOfficials].filter(t => t.style.display !== 'none');
+      if (visibleTabs.length > 0) {
+        visibleTabs[0].click();
+      }
     }
   }
 
@@ -160,5 +222,6 @@
     authFetch,
     openLoginModal,
     onChange: (cb) => changeListeners.push(cb),
+    syncSession: () => setSession(getSession()),
   };
 })();

@@ -84,14 +84,109 @@ project.
 
 ## Where this fits in the bigger picture
 
-This is **Module 1** of five. It hands off to:
+This is **Module 1 + Module 3** of five (Module 3 built directly on
+Module 1's pipeline). Remaining modules:
 
 - **Module 2** (WebGIS Verification Support) — will read the `location`
   field on each claim to overlay it on satellite imagery for the Gram Sabha.
-- **Module 3** (SDLC/DLC Review & Accountability Dashboard) — will build on
-  the `advance` endpoint, adding the mandatory-justification rule for
-  rejections.
 - **Module 4** (Applicant Status & Appeal Portal) — will read a claim's
-  `auditTrail` to show applicants exactly where their claim is and why.
+  `auditTrail` to show applicants exactly where their claim is and why,
+  including the officer's written rejection reason from Module 3.
 - **Module 5** (Government Analytics Dashboard) — will consume `/api/stats`
   and expand it into district/state-level analytics.
+
+## Module 3 — Role-based login, AI-assisted document review & escalation
+
+### Separate logins per role
+
+Applicant, Gram Sabha, SDLC, and DLC are genuinely separate, access-controlled
+roles — not a cosmetic dropdown. Demo accounts (properly hashed passwords,
+never plaintext — see `server/services/authService.js`):
+
+| Username     | Password        | Role         |
+|--------------|-----------------|--------------|
+| `applicant1` | `applicant123`  | Applicant    |
+| `gramsabha1` | `gramsabha123`  | Gram Sabha   |
+| `sdlc1`      | `sdlc123`       | SDLC         |
+| `dlc1`       | `dlc123`        | DLC          |
+
+**Honest scope:** this is a real, working login system (server-verified
+session tokens, scrypt-hashed passwords), but it is *not* production user
+management — no registration, no password reset, sessions live in memory
+and clear on server restart. A real deployment would replace
+`authService.js` with proper identity management without changing the
+shape of the middleware (`requireRole`, `requireStageRole`) that consumes
+it. Filing a claim requires logging in as an applicant; every officials
+action (queue view, document classification, confirmation, decisions)
+requires logging in with the role matching that specific claim's *current*
+stage — an SDLC officer genuinely cannot touch a claim sitting at DLC,
+enforced server-side, not just hidden in the UI.
+
+### Escalation rules (the actual point of this module)
+
+- **Reject at Gram Sabha → terminal.** The claim does not move to SDLC.
+- **Reject at SDLC → does NOT terminate.** It automatically forwards to
+  DLC, carrying the SDLC officer's rejection reason with it
+  (`claim.priorRejection`), shown prominently to the DLC officer reviewing
+  it. This models an SDLC rejection as an escalation for final DLC
+  determination, not a dead end.
+- **Reject at DLC → terminal.** DLC is the final stage — nowhere left to
+  escalate to.
+- **Approve** at any non-final stage forwards to the next stage; approve
+  at DLC grants the claim.
+
+All of this is enforced in `POST /api/claims/:id/decision` in `server.js`,
+independent of anything the frontend does.
+
+### AI-assisted document classification
+
+**What the AI does, honestly:** classifies which FRA Rule 13 (2007, as
+amended 2012) evidence category an uploaded document likely belongs to,
+using OCR (`tesseract.js`) plus keyword matching, and flags whether the
+applicant's name/village appear in the extracted text. That's it.
+
+**What it explicitly does NOT do:** verify that a document is genuine, or
+detect fraud. Neither is something a keyword-matching approach — or,
+honestly, most ML approaches without a large labeled dataset of confirmed
+genuine vs. fraudulent FRA claims, which doesn't exist publicly — can do
+responsibly. See `server/services/documentClassificationService.js` for
+the full reasoning.
+
+**The officer's tick is the only thing that counts.** No document is
+counted toward the Rule 13 checklist without an explicit officer
+confirmation, enforced at the API layer (`/confirm`), not just in the UI.
+The confirming officer's identity comes from their login session — a
+client can no longer just type in any name.
+
+**Rejecting a claim requires a written justification (≥10 characters),
+enforced server-side.** This targets the real, documented failure mode in
+FRA implementation: claims rejected with no stated reason and no path to
+appeal.
+
+**A real bug found and worked around while building this:** `tesseract.js`
+downloads its language model from a public CDN on first use. If that fetch
+fails (no internet, a restricted network, a CDN outage), the resulting
+error bypasses normal `try/catch` and crashes the entire Node process —
+verified directly during development. `server.js` has a narrow, documented
+`process.on("uncaughtException")` safety net specifically for this one
+failure mode. If OCR fails for any reason, `/classify` returns a clear
+error and the document can still be reviewed and confirmed manually — it
+never fabricates a classification.
+
+**Requires internet access on first use per machine** (to download the
+English language model, then it's cached in `server/data/tesseract-cache`
+for offline reuse after that). PDF documents are not yet OCR'd — only
+image files (jpg/png/etc.) — a stated scope limit, not a silent gap.
+
+### New API routes
+
+| Method | Route                                        | Auth required                          |
+|--------|-----------------------------------------------|-----------------------------------------|
+| POST   | `/api/auth/login`                             | none (this *is* the login)              |
+| POST   | `/api/auth/logout`                            | any logged-in session                   |
+| GET    | `/api/auth/me`                                | any logged-in session                   |
+| GET    | `/api/officials/queue?stage=`                 | officer role matching that stage        |
+| POST   | `/api/claims/:id/documents/:index/classify`   | officer role matching claim's stage     |
+| POST   | `/api/claims/:id/documents/:index/confirm`    | officer role matching claim's stage     |
+| GET    | `/api/claims/:id/checklist`                   | none (public transparency view)         |
+| POST   | `/api/claims/:id/decision`                    | officer role matching claim's stage     |

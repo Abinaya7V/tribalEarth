@@ -1,419 +1,600 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TribalEarth AI · Claim Filing Register</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Odia:wght@400;500;600;700&family=Noto+Sans+Ol+Chiki:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TribalEarth AI · Claim Filing Register</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Odia:wght@400;500;600;700&family=Noto+Sans+Ol+Chiki:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css" />
 </head>
+
 <body>
 
-<div class="contour-field" aria-hidden="true"></div>
+  <!-- ============ LANDING PAGE ============ -->
+  <div id="landingContainer" class="landing-layout">
+    <div class="landing-left">
+      <div class="contour-field-landing" aria-hidden="true"></div>
+      <div class="landing-left-content">
+        <div class="landing-badge">FOREST RIGHTS ACT, 2006 · DIGITAL CLAIM PLATFORM</div>
+        <div class="wordmark landing-wordmark">
+          <span class="wordmark-mark">◈</span>
+          <div class="wordmark-text">
+            <span class="wordmark-title">TribalEarth <em class="wordmark-ai">AI</em></span>
+          </div>
+        </div>
+        <h1 class="landing-headline">
+          Transparent Claims.<br>
+          <span class="landing-headline-highlight">Verified by the Process.</span>
+        </h1>
+        <p class="landing-subhead">
+          TribalEarth AI digitizes the Gram Sabha → SDLC → DLC forest rights
+          pipeline — every claim tracked, every rejection justified, every
+          decision auditable.
+        </p>
 
-<header class="site-header">
-  <div class="header-inner">
-    <div class="wordmark">
-      <span class="wordmark-mark">◈</span>
-      <div class="wordmark-text">
-        <span class="wordmark-title"><span data-i18n="header.title">TribalEarth</span> <em>AI</em></span>
-        <span class="wordmark-sub" data-i18n="header.sub">Forest Rights Claim Register</span>
-      </div>
-    </div>
-    <div class="header-actions">
-      <div id="sessionStatus" class="session-status">
-        <span id="sessionLabel" class="session-label" hidden></span>
-        <button id="loginBtn" class="btn btn-ghost btn-sm">Log in</button>
-        <button id="logoutBtn" class="btn btn-ghost btn-sm" hidden>Log out</button>
-      </div>
-      <label class="lang-toggle" title="Interface language">
-        <span class="sr-only">Language</span>
-        <select id="langSelect">
-          <!-- Populated dynamically via config.js -->
-          <option value="en">English</option>
-        </select>
-      </label>
-    </div>
-  </div>
-  <nav class="tab-nav" role="tablist" aria-label="Primary">
-    <button class="tab-btn is-active" data-tab="file" role="tab" aria-selected="true">
-      <span class="tab-index">01</span> <span data-i18n="header.nav.file">File a Claim</span>
-    </button>
-    <button class="tab-btn" data-tab="register" role="tab" aria-selected="false">
-      <span class="tab-index">02</span> <span data-i18n="header.nav.register">Claims Register</span>
-    </button>
-    <button class="tab-btn" data-tab="officials" role="tab" aria-selected="false">
-      <span class="tab-index">03</span> Officials Review
-    </button>
-  </nav>
-</header>
-
-<main class="app-main">
-
-  <!-- ============ TAB: FILE A CLAIM ============ -->
-  <section id="tab-file" class="tab-panel is-active">
-    <div class="filing-layout">
-
-      <!-- Stepper rail -->
-      <aside class="stepper" aria-label="Claim filing steps">
-        <ol>
-          <li class="step is-active" data-step="1">
-            <span class="step-dot">1</span>
-            <div class="step-copy">
-              <span class="step-title" data-i18n="stepper.step1.title">Applicant &amp; Village</span>
-              <span class="step-desc" data-i18n="stepper.step1.desc">Who is filing, and where</span>
-            </div>
-          </li>
-          <li class="step" data-step="2">
-            <span class="step-dot">2</span>
-            <div class="step-copy">
-              <span class="step-title" data-i18n="stepper.step2.title">Land &amp; Claim Type</span>
-              <span class="step-desc" data-i18n="stepper.step2.desc">IFR, CR, or CFR details</span>
-            </div>
-          </li>
-          <li class="step" data-step="3">
-            <span class="step-dot">3</span>
-            <div class="step-copy">
-              <span class="step-title" data-i18n="stepper.step3.title">Supporting Documents</span>
-              <span class="step-desc" data-i18n="stepper.step3.desc">Evidence of occupation</span>
-            </div>
-          </li>
-          <li class="step" data-step="4">
-            <span class="step-dot">4</span>
-            <div class="step-copy">
-              <span class="step-title" data-i18n="stepper.step4.title">Review &amp; Submit</span>
-              <span class="step-desc" data-i18n="stepper.step4.desc">Confirm before filing</span>
-            </div>
-          </li>
-        </ol>
-
-        <p class="stepper-note" data-i18n="stepper.note">Every claim is recorded the moment it is filed at Gram&nbsp;Sabha level — nothing here overrides the Gram Sabha's decision.</p>
-        <button type="button" id="listenStepperNoteBtn" class="btn btn-ghost btn-sm listen-btn" data-listen-target="stepper.note" data-i18n-title="voice.listenLabel" data-i18n-aria-label="voice.listenLabel" title="Listen">🔊 <span data-i18n="voice.listenLabel">Listen</span></button>
-      </aside>
-
-      <!-- Form card -->
-      <div class="form-card">
-        <form id="claimForm" novalidate>
-
-          <!-- STEP 1 -->
-          <fieldset class="form-step is-active" data-step="1">
-            <legend class="step-legend">
-              <span class="step-legend-index">01</span><span data-i18n="form.step1.legend">Applicant &amp; Village Details</span>
-              <button type="button" id="fillUsingVoiceBtn" class="btn btn-ghost btn-sm voice-guided-btn" data-i18n="voice.fillUsingVoice" data-i18n-title="voice.fillUsingVoice">Fill Using Voice</button>
-            </legend>
-
-            <div class="field-grid">
-              <div class="field">
-                <label for="applicantName"><span data-i18n="form.step1.applicant">Applicant's full name</span> <span class="req">*</span></label>
-                <div class="field-input-row">
-                  <input type="text" id="applicantName" name="applicantName" required placeholder="e.g. Ramesh Netam" data-i18n-placeholder="form.step1.applicantPlaceholder">
-                  <button type="button" class="mic-btn" data-mic-target="applicantName" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
-                </div>
-              </div>
-              <div class="field">
-                <label for="guardianName" data-i18n="form.step1.guardian">Father's / Husband's name</label>
-                <div class="field-input-row">
-                  <input type="text" id="guardianName" name="guardianName" placeholder="e.g. Sukhram Netam" data-i18n-placeholder="form.step1.guardianPlaceholder">
-                  <button type="button" class="mic-btn" data-mic-target="guardianName" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
-                </div>
-              </div>
-              <div class="field">
-                <label for="village"><span data-i18n="form.step1.village">Village</span> <span class="req">*</span></label>
-                <div class="field-input-row">
-                  <input type="text" id="village" name="village" required placeholder="e.g. Kanker" data-i18n-placeholder="form.step1.villagePlaceholder">
-                  <button type="button" class="mic-btn" data-mic-target="village" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
-                </div>
-              </div>
-              <div class="field">
-                <label for="gramPanchayat" data-i18n="form.step1.gp">Gram Panchayat</label>
-                <div class="field-input-row">
-                  <input type="text" id="gramPanchayat" name="gramPanchayat" placeholder="e.g. Kanker GP" data-i18n-placeholder="form.step1.gpPlaceholder">
-                  <button type="button" class="mic-btn" data-mic-target="gramPanchayat" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
-                </div>
-              </div>
-              <div class="field">
-                <label for="district"><span data-i18n="form.step1.district">District</span> <span class="req">*</span></label>
-                <div class="field-input-row">
-                  <input type="text" id="district" name="district" required placeholder="e.g. Kanker" data-i18n-placeholder="form.step1.districtPlaceholder">
-                  <button type="button" class="mic-btn" data-mic-target="district" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
-                </div>
-              </div>
-              <div class="field">
-                <label for="state"><span data-i18n="form.step1.state">State</span> <span class="req">*</span></label>
-                <div class="field-input-row">
-                  <input type="text" id="state" name="state" required placeholder="e.g. Chhattisgarh" data-i18n-placeholder="form.step1.statePlaceholder">
-                  <button type="button" class="mic-btn" data-mic-target="state" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
-                </div>
-              </div>
-              <div class="field">
-                <label for="stateCode"><span data-i18n="form.step1.stateCode">State code</span> <span class="hint" data-i18n="form.step1.stateCodeHint">(2 letters, for claim ID)</span></label>
-                <input type="text" id="stateCode" name="stateCode" maxlength="2" placeholder="e.g. CG" data-i18n-placeholder="form.step1.stateCodePlaceholder">
-              </div>
-            </div>
-          </fieldset>
-
-          <!-- STEP 2 -->
-          <fieldset class="form-step" data-step="2">
-            <legend class="step-legend"><span class="step-legend-index">02</span><span data-i18n="form.step2.legend">Land &amp; Claim Type</span></legend>
-
-            <div class="claim-type-select">
-              <label class="claim-type-option">
-                <input type="radio" name="claimType" value="IFR" required>
-                <span class="claim-type-card">
-                  <span class="claim-type-code">IFR</span>
-                  <span class="claim-type-label" data-i18n="form.step2.ifrTitle">Individual Forest Right</span>
-                  <span class="claim-type-desc" data-i18n="form.step2.ifrDesc">Right to live &amp; cultivate forest land for livelihood</span>
-                </span>
-              </label>
-              <label class="claim-type-option">
-                <input type="radio" name="claimType" value="CR">
-                <span class="claim-type-card">
-                  <span class="claim-type-code">CR</span>
-                  <span class="claim-type-label" data-i18n="form.step2.crTitle">Community Right</span>
-                  <span class="claim-type-desc" data-i18n="form.step2.crDesc">Shared community access &amp; use rights</span>
-                </span>
-              </label>
-              <label class="claim-type-option">
-                <input type="radio" name="claimType" value="CFR">
-                <span class="claim-type-card">
-                  <span class="claim-type-code">CFR</span>
-                  <span class="claim-type-label" data-i18n="form.step2.cfrTitle">Community Forest Resource</span>
-                  <span class="claim-type-desc" data-i18n="form.step2.cfrDesc">Collective right to protect, manage &amp; govern forest</span>
-                </span>
-              </label>
-            </div>
-
-            <div class="field-grid">
-              <div class="field field-span2">
-                <label for="landDescription" data-i18n="form.step2.landDesc">Description of land / boundary</label>
-                <div class="field-input-row field-input-row-textarea">
-                  <textarea id="landDescription" name="landDescription" rows="3" placeholder="e.g. Plot east of Kanker stream, bordered by sal forest to the north" data-i18n-placeholder="form.step2.landDescPlaceholder"></textarea>
-                  <button type="button" class="mic-btn" data-mic-target="landDescription" data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field" aria-label="Speak this field">🎙️</button>
-                </div>
-              </div>
-              <div class="field">
-                <label for="yearsOfCultivation" data-i18n="form.step2.cultivationYears">Years of cultivation / occupation</label>
-                <input type="number" id="yearsOfCultivation" name="yearsOfCultivation" min="0" placeholder="e.g. 12" data-i18n-placeholder="form.step2.cultivationYearsPlaceholder">
-              </div>
-              <div class="field">
-                <label for="latitude"><span data-i18n="form.step2.lat">Latitude</span> <span class="hint" data-i18n="form.step2.optional">(optional)</span></label>
-                <input type="text" id="latitude" name="latitude" placeholder="e.g. 20.2734" data-i18n-placeholder="form.step2.latPlaceholder">
-              </div>
-              <div class="field">
-                <label for="longitude"><span data-i18n="form.step2.lng">Longitude</span> <span class="hint" data-i18n="form.step2.optional">(optional)</span></label>
-                <input type="text" id="longitude" name="longitude" placeholder="e.g. 81.4930" data-i18n-placeholder="form.step2.lngPlaceholder">
-              </div>
-            </div>
-          </fieldset>
-
-          <!-- STEP 3 -->
-          <fieldset class="form-step" data-step="3">
-            <legend class="step-legend"><span class="step-legend-index">03</span><span data-i18n="form.step3.legend">Supporting Documents</span></legend>
-            <p class="field-help" data-i18n="form.step3.help">Photos of residence proof, cultivation evidence, or any existing record. Up to 6 files, 8MB each.</p>
-
-            <label class="dropzone" id="dropzone" for="documents">
-              <span class="dropzone-icon">⤒</span>
-              <span class="dropzone-text"><strong data-i18n="form.step3.dropzone">Tap to add photos</strong> <span data-i18n="form.step3.dropzoneOr">or drag files here</span></span>
-              <input type="file" id="documents" name="documents" multiple accept="image/*,.pdf">
-            </label>
-
-            <ul id="fileList" class="file-list" aria-live="polite"></ul>
-          </fieldset>
-
-          <!-- STEP 4 -->
-          <fieldset class="form-step" data-step="4">
-            <legend class="step-legend"><span class="step-legend-index">04</span><span data-i18n="form.step4.legend">Review &amp; Submit</span></legend>
-            <p class="field-help" data-i18n="form.step4.help">Please confirm the details below with the applicant before filing at Gram Sabha.</p>
-            <dl id="reviewList" class="review-list"></dl>
-          </fieldset>
-
-          <div class="form-nav">
-            <button type="button" id="prevBtn" class="btn btn-ghost" data-i18n="form.buttons.back" disabled>Back</button>
-            <div class="form-nav-right">
-              <span id="formMsg" class="form-msg" role="status"></span>
-              <button type="button" id="nextBtn" class="btn btn-primary" data-i18n="form.buttons.continue">Continue</button>
-              <button type="submit" id="submitBtn" class="btn btn-primary is-hidden" data-i18n="form.buttons.submit">File Claim at Gram Sabha</button>
+        <div class="landing-features">
+          <div class="landing-feature-row">
+            <span class="landing-icon">🎙️</span>
+            <div class="landing-feature-text">
+              <strong>AI-Assisted Document Review</strong> — classifies evidence against FRA Rule 13, officer confirms
+              every match
             </div>
           </div>
-        </form>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ TAB: CLAIMS REGISTER ============ -->
-  <section id="tab-register" class="tab-panel">
-    <div class="register-toolbar">
-      <div class="register-search">
-        <input type="search" id="searchInput" placeholder="Search by name, village, or claim ID…" data-i18n-placeholder="register.search">
-      </div>
-      <div class="register-filters">
-        <select id="filterType">
-          <option value="" data-i18n="register.filterTypeAll">All claim types</option>
-          <option value="IFR">IFR</option>
-          <option value="CR">CR</option>
-          <option value="CFR">CFR</option>
-        </select>
-        <select id="filterStage">
-          <option value="" data-i18n="register.filterStageAll">All stages</option>
-          <option value="Gram Sabha">Gram Sabha</option>
-          <option value="SDLC">SDLC</option>
-          <option value="DLC">DLC</option>
-        </select>
-        <button id="refreshBtn" class="btn btn-ghost btn-sm" data-i18n="register.refresh">Refresh</button>
-      </div>
-    </div>
-
-    <div class="stats-strip" id="statsStrip"></div>
-
-    <div class="ledger-wrap">
-      <table class="ledger" id="ledgerTable">
-        <thead>
-          <tr>
-            <th data-i18n="register.table.id">Claim ID</th>
-            <th data-i18n="register.table.applicant">Applicant</th>
-            <th data-i18n="register.table.village">Village</th>
-            <th data-i18n="register.table.type">Type</th>
-            <th data-i18n="register.table.stage">Stage</th>
-            <th data-i18n="register.table.date">Filed on</th>
-          </tr>
-        </thead>
-        <tbody id="ledgerBody">
-          <tr class="ledger-empty"><td colspan="6" data-i18n="register.loading">Loading claims…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ============ TAB: OFFICIALS REVIEW (Module 3) ============ -->
-  <section id="tab-officials" class="tab-panel">
-    <div class="officials-note">
-      This view is for Gram Sabha / SDLC / DLC officials only, and requires
-      logging in with the matching role. AI classification below is a
-      <strong>suggestion to speed up review</strong> — it does not verify
-      document authenticity or detect fraud, and nothing counts toward the
-      Rule 13 checklist until an officer explicitly confirms it.
-    </div>
-
-    <div id="officialsLoginPrompt" class="officials-login-prompt">
-      <p>Log in as a Gram Sabha, SDLC, or DLC officer to review claims.</p>
-      <button id="officialsLoginBtn" class="btn btn-primary btn-sm">Log in</button>
-    </div>
-
-    <div id="officialsPanel" class="officials-panel" hidden>
-      <div class="register-toolbar">
-        <div class="register-filters">
-          <select id="officialsStageSelect"></select>
-          <button id="officialsRefreshBtn" class="btn btn-ghost btn-sm">Refresh</button>
+          <div class="landing-feature-row">
+            <span class="landing-icon">👥</span>
+            <div class="landing-feature-text">
+              <strong>Role-Separated Review Pipeline</strong> — Gram Sabha, SDLC, and DLC each see only their own queue
+            </div>
+          </div>
+          <div class="landing-feature-row">
+            <span class="landing-icon">🔒</span>
+            <div class="landing-feature-text">
+              <strong>Full Audit Trail</strong> — every claim, stage, and rejection reason permanently recorded
+            </div>
+          </div>
         </div>
       </div>
+    </div>
 
-      <div class="stats-strip" id="officialsStatsStrip"></div>
+    <div class="landing-right">
+      <div class="landing-card form-card">
+        <h2 class="landing-heading">Welcome back</h2>
+        <p class="landing-subtext">Select your role and log in to continue</p>
 
-      <div class="ledger-wrap">
-        <table class="ledger" id="officialsLedgerTable">
-          <thead>
-            <tr>
-              <th>Claim ID</th>
-              <th>Applicant</th>
-              <th>Village</th>
-              <th>Type</th>
-              <th>Days Pending</th>
-              <th>SLA</th>
-            </tr>
-          </thead>
-          <tbody id="officialsLedgerBody">
-            <tr class="ledger-empty"><td colspan="6">Loading queue…</td></tr>
-          </tbody>
-        </table>
+        <div class="landing-role-grid">
+          <label class="landing-role-option">
+            <input type="radio" name="landingRole" value="applicant" data-label="Applicant" data-demo="applicant1"
+              checked>
+            <span class="claim-type-card landing-role-card">
+              <span class="claim-type-label">Applicant</span>
+              <span class="claim-type-desc">File and track claims</span>
+            </span>
+          </label>
+          <label class="landing-role-option">
+            <input type="radio" name="landingRole" value="gram_sabha" data-label="Gram Sabha" data-demo="gramsabha1">
+            <span class="claim-type-card landing-role-card">
+              <span class="claim-type-label">Gram Sabha</span>
+              <span class="claim-type-desc">Community-level review</span>
+            </span>
+          </label>
+          <label class="landing-role-option">
+            <input type="radio" name="landingRole" value="sdlc" data-label="SDLC" data-demo="sdlc1">
+            <span class="claim-type-card landing-role-card">
+              <span class="claim-type-label">SDLC</span>
+              <span class="claim-type-desc">Sub-divisional review</span>
+            </span>
+          </label>
+          <label class="landing-role-option">
+            <input type="radio" name="landingRole" value="dlc" data-label="DLC" data-demo="dlc1">
+            <span class="claim-type-card landing-role-card">
+              <span class="claim-type-label">DLC</span>
+              <span class="claim-type-desc">Final determination</span>
+            </span>
+          </label>
+        </div>
+
+        <form id="landingLoginForm" class="landing-form">
+          <div class="field">
+            <label for="landingUsername">Username</label>
+            <input type="text" id="landingUsername" name="username" placeholder="applicant1" required
+              autocomplete="username">
+          </div>
+          <div class="field">
+            <label for="landingPassword">Password</label>
+            <input type="password" id="landingPassword" name="password" placeholder="applicant123" required
+              autocomplete="current-password">
+          </div>
+          <div id="landingLoginError" class="login-error" hidden></div>
+          <button type="submit" id="landingSubmitBtn" class="btn btn-primary btn-block">Log in as Applicant</button>
+        </form>
+
+        <div class="landing-helper-text">
+          Demo accounts — applicant1/applicant123 · gramsabha1/gramsabha123 · sdlc1/sdlc123 · dlc1/dlc123
+        </div>
+      </div>
+      <div class="landing-footer">
+        🔒 Role-based access · FRA Rules 2007 compliant · TribalEarth AI
       </div>
     </div>
-  </section>
-
-</main>
-
-<!-- Detail drawer -->
-<div id="drawerOverlay" class="drawer-overlay"></div>
-<aside id="claimDrawer" class="claim-drawer" aria-hidden="true">
-  <button id="drawerClose" class="drawer-close" aria-label="Close" data-i18n="drawer.close">✕</button>
-  <div id="drawerContent" class="drawer-content"></div>
-</aside>
-
-<!-- Officials review drawer (Module 3) — separate from the citizen drawer above -->
-<div id="officialsDrawerOverlay" class="drawer-overlay"></div>
-<aside id="officialsDrawer" class="claim-drawer officials-drawer" aria-hidden="true">
-  <button id="officialsDrawerClose" class="drawer-close" aria-label="Close">✕</button>
-  <div id="officialsDrawerContent" class="drawer-content"></div>
-</aside>
-
-<!-- Login modal -->
-<div id="loginOverlay" class="drawer-overlay"></div>
-<div id="loginModal" class="login-modal" aria-hidden="true" role="dialog" aria-labelledby="loginTitle">
-  <button id="loginModalClose" class="drawer-close" aria-label="Close">✕</button>
-  <h2 id="loginTitle">Log in</h2>
-  <p class="login-modal-sub">TribalEarth AI uses separate logins per role — Applicant, Gram Sabha, SDLC, and DLC each see and can act on only what's theirs.</p>
-  <form id="loginForm">
-    <div class="field">
-      <label for="loginUsername">Username</label>
-      <input type="text" id="loginUsername" autocomplete="username" required>
-    </div>
-    <div class="field">
-      <label for="loginPassword">Password</label>
-      <input type="password" id="loginPassword" autocomplete="current-password" required>
-    </div>
-    <div id="loginError" class="login-error" hidden></div>
-    <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Log in</button>
-  </form>
-  <div class="login-demo-hint">
-    <strong>Demo accounts</strong> (see README for details):<br>
-    applicant1 / applicant123 &middot; gramsabha1 / gramsabha123 &middot;
-    sdlc1 / sdlc123 &middot; dlc1 / dlc123
   </div>
-</div>
 
-<!-- Onboarding Modal -->
-<div id="onboardingModal" class="onboarding-modal" aria-hidden="true" role="dialog" aria-labelledby="onboardingTitle">
-  <div class="onboarding-content">
-    <h2 id="onboardingTitle" data-i18n="onboarding.title">Welcome to TribalEarth AI</h2>
-    <p data-i18n="onboarding.desc">Select your language to access the Forest Rights Act (FRA) claim management platform.</p>
-    <div class="onboarding-languages" id="onboardingLangList"></div>
-    <button id="onboardingStartBtn" class="btn btn-primary" data-i18n="onboarding.start">Get Started</button>
-  </div>
-</div>
+  <!-- ============ MAIN APP CONTAINER ============ -->
+  <div id="appContainer" hidden>
 
-<!-- Voice status pill: shows ready/listening/processing/success/error states -->
-<div id="voiceStatusPill" class="voice-status-pill" aria-live="polite" hidden>
-  <span id="voiceStatusIcon" class="voice-status-icon">●</span>
-  <span id="voiceStatusText" class="voice-status-text"></span>
-</div>
+    <div class="contour-field" aria-hidden="true"></div>
 
-<!-- Guided "Fill Using Voice" modal -->
-<div id="voiceGuidedOverlay" class="drawer-overlay"></div>
-<div id="voiceGuidedModal" class="voice-guided-modal" aria-hidden="true" role="dialog" aria-labelledby="voiceGuidedTitle">
-  <div class="voice-guided-content">
-    <button type="button" id="voiceGuidedClose" class="drawer-close" aria-label="Close">✕</button>
-    <h2 id="voiceGuidedTitle" data-i18n="voice.guided.title">Fill Using Voice</h2>
-    <p id="voiceGuidedIntro" data-i18n="voice.guided.intro">We'll ask for a few details, one at a time. Speak clearly after each question.</p>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="wordmark">
+          <span class="wordmark-mark">◈</span>
+          <div class="wordmark-text">
+            <span class="wordmark-title"><span data-i18n="header.title">TribalEarth</span> <em>AI</em></span>
+            <span class="wordmark-sub" data-i18n="header.sub">Forest Rights Claim Register</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div id="sessionStatus" class="session-status">
+            <span id="sessionLabel" class="session-label" hidden></span>
+            <button id="loginBtn" class="btn btn-ghost btn-sm">Log in</button>
+            <button id="logoutBtn" class="btn btn-ghost btn-sm" hidden>Log out</button>
+          </div>
+          <label class="lang-toggle" title="Interface language">
+            <span class="sr-only">Language</span>
+            <select id="langSelect">
+              <!-- Populated dynamically via config.js -->
+              <option value="en">English</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <nav class="tab-nav" role="tablist" aria-label="Primary">
+        <button class="tab-btn is-active" data-tab="file" role="tab" aria-selected="true">
+          <span class="tab-index">01</span> <span data-i18n="header.nav.file">File a Claim</span>
+        </button>
+        <button class="tab-btn" data-tab="register" role="tab" aria-selected="false">
+          <span class="tab-index">02</span> <span data-i18n="header.nav.register">Claims Register</span>
+        </button>
+        <button class="tab-btn" data-tab="officials" role="tab" aria-selected="false">
+          <span class="tab-index">03</span> Officials Review
+        </button>
+      </nav>
+    </header>
 
-    <div id="voiceGuidedQuestion" class="voice-guided-question"></div>
-    <div id="voiceGuidedStatus" class="voice-guided-status"></div>
+    <main class="app-main">
 
-    <div id="voiceGuidedReview" class="voice-guided-review" hidden></div>
+      <!-- ============ TAB: FILE A CLAIM ============ -->
+      <section id="tab-file" class="tab-panel is-active">
+        <div class="filing-layout">
 
-    <div class="voice-guided-actions">
-      <button type="button" id="voiceGuidedSkip" class="btn btn-ghost btn-sm" data-i18n="voice.guided.skip">Skip this question</button>
-      <button type="button" id="voiceGuidedMic" class="btn btn-primary voice-guided-mic">🎙️</button>
+          <!-- Stepper rail -->
+          <aside class="stepper" aria-label="Claim filing steps">
+            <ol>
+              <li class="step is-active" data-step="1">
+                <span class="step-dot">1</span>
+                <div class="step-copy">
+                  <span class="step-title" data-i18n="stepper.step1.title">Applicant &amp; Village</span>
+                  <span class="step-desc" data-i18n="stepper.step1.desc">Who is filing, and where</span>
+                </div>
+              </li>
+              <li class="step" data-step="2">
+                <span class="step-dot">2</span>
+                <div class="step-copy">
+                  <span class="step-title" data-i18n="stepper.step2.title">Land &amp; Claim Type</span>
+                  <span class="step-desc" data-i18n="stepper.step2.desc">IFR, CR, or CFR details</span>
+                </div>
+              </li>
+              <li class="step" data-step="3">
+                <span class="step-dot">3</span>
+                <div class="step-copy">
+                  <span class="step-title" data-i18n="stepper.step3.title">Supporting Documents</span>
+                  <span class="step-desc" data-i18n="stepper.step3.desc">Evidence of occupation</span>
+                </div>
+              </li>
+              <li class="step" data-step="4">
+                <span class="step-dot">4</span>
+                <div class="step-copy">
+                  <span class="step-title" data-i18n="stepper.step4.title">Review &amp; Submit</span>
+                  <span class="step-desc" data-i18n="stepper.step4.desc">Confirm before filing</span>
+                </div>
+              </li>
+            </ol>
+
+            <p class="stepper-note" data-i18n="stepper.note">Every claim is recorded the moment it is filed at
+              Gram&nbsp;Sabha level — nothing here overrides the Gram Sabha's decision.</p>
+            <button type="button" id="listenStepperNoteBtn" class="btn btn-ghost btn-sm listen-btn"
+              data-listen-target="stepper.note" data-i18n-title="voice.listenLabel"
+              data-i18n-aria-label="voice.listenLabel" title="Listen">🔊 <span
+                data-i18n="voice.listenLabel">Listen</span></button>
+          </aside>
+
+          <!-- Form card -->
+          <div class="form-card">
+            <form id="claimForm" novalidate>
+
+              <!-- STEP 1 -->
+              <fieldset class="form-step is-active" data-step="1">
+                <legend class="step-legend">
+                  <span class="step-legend-index">01</span><span data-i18n="form.step1.legend">Applicant &amp; Village
+                    Details</span>
+                  <button type="button" id="fillUsingVoiceBtn" class="btn btn-ghost btn-sm voice-guided-btn"
+                    data-i18n="voice.fillUsingVoice" data-i18n-title="voice.fillUsingVoice">Fill Using Voice</button>
+                </legend>
+
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="applicantName"><span data-i18n="form.step1.applicant">Applicant's full name</span> <span
+                        class="req">*</span></label>
+                    <div class="field-input-row">
+                      <input type="text" id="applicantName" name="applicantName" required
+                        placeholder="e.g. Ramesh Netam" data-i18n-placeholder="form.step1.applicantPlaceholder">
+                      <button type="button" class="mic-btn" data-mic-target="applicantName"
+                        data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field"
+                        aria-label="Speak this field">🎙️</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="guardianName" data-i18n="form.step1.guardian">Father's / Husband's name</label>
+                    <div class="field-input-row">
+                      <input type="text" id="guardianName" name="guardianName" placeholder="e.g. Sukhram Netam"
+                        data-i18n-placeholder="form.step1.guardianPlaceholder">
+                      <button type="button" class="mic-btn" data-mic-target="guardianName"
+                        data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field"
+                        aria-label="Speak this field">🎙️</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="village"><span data-i18n="form.step1.village">Village</span> <span
+                        class="req">*</span></label>
+                    <div class="field-input-row">
+                      <input type="text" id="village" name="village" required placeholder="e.g. Kanker"
+                        data-i18n-placeholder="form.step1.villagePlaceholder">
+                      <button type="button" class="mic-btn" data-mic-target="village" data-i18n-title="voice.micLabel"
+                        data-i18n-aria-label="voice.micLabel" title="Speak this field"
+                        aria-label="Speak this field">🎙️</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="gramPanchayat" data-i18n="form.step1.gp">Gram Panchayat</label>
+                    <div class="field-input-row">
+                      <input type="text" id="gramPanchayat" name="gramPanchayat" placeholder="e.g. Kanker GP"
+                        data-i18n-placeholder="form.step1.gpPlaceholder">
+                      <button type="button" class="mic-btn" data-mic-target="gramPanchayat"
+                        data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field"
+                        aria-label="Speak this field">🎙️</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="district"><span data-i18n="form.step1.district">District</span> <span
+                        class="req">*</span></label>
+                    <div class="field-input-row">
+                      <input type="text" id="district" name="district" required placeholder="e.g. Kanker"
+                        data-i18n-placeholder="form.step1.districtPlaceholder">
+                      <button type="button" class="mic-btn" data-mic-target="district" data-i18n-title="voice.micLabel"
+                        data-i18n-aria-label="voice.micLabel" title="Speak this field"
+                        aria-label="Speak this field">🎙️</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="state"><span data-i18n="form.step1.state">State</span> <span
+                        class="req">*</span></label>
+                    <div class="field-input-row">
+                      <input type="text" id="state" name="state" required placeholder="e.g. Chhattisgarh"
+                        data-i18n-placeholder="form.step1.statePlaceholder">
+                      <button type="button" class="mic-btn" data-mic-target="state" data-i18n-title="voice.micLabel"
+                        data-i18n-aria-label="voice.micLabel" title="Speak this field"
+                        aria-label="Speak this field">🎙️</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="stateCode"><span data-i18n="form.step1.stateCode">State code</span> <span class="hint"
+                        data-i18n="form.step1.stateCodeHint">(2 letters, for claim ID)</span></label>
+                    <input type="text" id="stateCode" name="stateCode" maxlength="2" placeholder="e.g. CG"
+                      data-i18n-placeholder="form.step1.stateCodePlaceholder">
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- STEP 2 -->
+              <fieldset class="form-step" data-step="2">
+                <legend class="step-legend"><span class="step-legend-index">02</span><span
+                    data-i18n="form.step2.legend">Land &amp; Claim Type</span></legend>
+
+                <div class="claim-type-select">
+                  <label class="claim-type-option">
+                    <input type="radio" name="claimType" value="IFR" required>
+                    <span class="claim-type-card">
+                      <span class="claim-type-code">IFR</span>
+                      <span class="claim-type-label" data-i18n="form.step2.ifrTitle">Individual Forest Right</span>
+                      <span class="claim-type-desc" data-i18n="form.step2.ifrDesc">Right to live &amp; cultivate forest
+                        land for livelihood</span>
+                    </span>
+                  </label>
+                  <label class="claim-type-option">
+                    <input type="radio" name="claimType" value="CR">
+                    <span class="claim-type-card">
+                      <span class="claim-type-code">CR</span>
+                      <span class="claim-type-label" data-i18n="form.step2.crTitle">Community Right</span>
+                      <span class="claim-type-desc" data-i18n="form.step2.crDesc">Shared community access &amp; use
+                        rights</span>
+                    </span>
+                  </label>
+                  <label class="claim-type-option">
+                    <input type="radio" name="claimType" value="CFR">
+                    <span class="claim-type-card">
+                      <span class="claim-type-code">CFR</span>
+                      <span class="claim-type-label" data-i18n="form.step2.cfrTitle">Community Forest Resource</span>
+                      <span class="claim-type-desc" data-i18n="form.step2.cfrDesc">Collective right to protect, manage
+                        &amp; govern forest</span>
+                    </span>
+                  </label>
+                </div>
+
+                <div class="field-grid">
+                  <div class="field field-span2">
+                    <label for="landDescription" data-i18n="form.step2.landDesc">Description of land / boundary</label>
+                    <div class="field-input-row field-input-row-textarea">
+                      <textarea id="landDescription" name="landDescription" rows="3"
+                        placeholder="e.g. Plot east of Kanker stream, bordered by sal forest to the north"
+                        data-i18n-placeholder="form.step2.landDescPlaceholder"></textarea>
+                      <button type="button" class="mic-btn" data-mic-target="landDescription"
+                        data-i18n-title="voice.micLabel" data-i18n-aria-label="voice.micLabel" title="Speak this field"
+                        aria-label="Speak this field">🎙️</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="yearsOfCultivation" data-i18n="form.step2.cultivationYears">Years of cultivation /
+                      occupation</label>
+                    <input type="number" id="yearsOfCultivation" name="yearsOfCultivation" min="0" placeholder="e.g. 12"
+                      data-i18n-placeholder="form.step2.cultivationYearsPlaceholder">
+                  </div>
+                  <div class="field">
+                    <label for="latitude"><span data-i18n="form.step2.lat">Latitude</span> <span class="hint"
+                        data-i18n="form.step2.optional">(optional)</span></label>
+                    <input type="text" id="latitude" name="latitude" placeholder="e.g. 20.2734"
+                      data-i18n-placeholder="form.step2.latPlaceholder">
+                  </div>
+                  <div class="field">
+                    <label for="longitude"><span data-i18n="form.step2.lng">Longitude</span> <span class="hint"
+                        data-i18n="form.step2.optional">(optional)</span></label>
+                    <input type="text" id="longitude" name="longitude" placeholder="e.g. 81.4930"
+                      data-i18n-placeholder="form.step2.lngPlaceholder">
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- STEP 3 -->
+              <fieldset class="form-step" data-step="3">
+                <legend class="step-legend"><span class="step-legend-index">03</span><span
+                    data-i18n="form.step3.legend">Supporting Documents</span></legend>
+                <p class="field-help" data-i18n="form.step3.help">Photos of residence proof, cultivation evidence, or
+                  any existing record. Up to 6 files, 8MB each.</p>
+
+                <label class="dropzone" id="dropzone" for="documents">
+                  <span class="dropzone-icon">⤒</span>
+                  <span class="dropzone-text"><strong data-i18n="form.step3.dropzone">Tap to add photos</strong> <span
+                      data-i18n="form.step3.dropzoneOr">or drag files here</span></span>
+                  <input type="file" id="documents" name="documents" multiple accept="image/*,.pdf">
+                </label>
+
+                <ul id="fileList" class="file-list" aria-live="polite"></ul>
+              </fieldset>
+
+              <!-- STEP 4 -->
+              <fieldset class="form-step" data-step="4">
+                <legend class="step-legend"><span class="step-legend-index">04</span><span
+                    data-i18n="form.step4.legend">Review &amp; Submit</span></legend>
+                <p class="field-help" data-i18n="form.step4.help">Please confirm the details below with the applicant
+                  before filing at Gram Sabha.</p>
+                <dl id="reviewList" class="review-list"></dl>
+              </fieldset>
+
+              <div class="form-nav">
+                <button type="button" id="prevBtn" class="btn btn-ghost" data-i18n="form.buttons.back"
+                  disabled>Back</button>
+                <div class="form-nav-right">
+                  <span id="formMsg" class="form-msg" role="status"></span>
+                  <button type="button" id="nextBtn" class="btn btn-primary"
+                    data-i18n="form.buttons.continue">Continue</button>
+                  <button type="submit" id="submitBtn" class="btn btn-primary is-hidden"
+                    data-i18n="form.buttons.submit">File Claim at Gram Sabha</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TAB: CLAIMS REGISTER ============ -->
+      <section id="tab-register" class="tab-panel">
+        <div class="register-toolbar">
+          <div class="register-search">
+            <input type="search" id="searchInput" placeholder="Search by name, village, or claim ID…"
+              data-i18n-placeholder="register.search">
+          </div>
+          <div class="register-filters">
+            <select id="filterType">
+              <option value="" data-i18n="register.filterTypeAll">All claim types</option>
+              <option value="IFR">IFR</option>
+              <option value="CR">CR</option>
+              <option value="CFR">CFR</option>
+            </select>
+            <select id="filterStage">
+              <option value="" data-i18n="register.filterStageAll">All stages</option>
+              <option value="Gram Sabha">Gram Sabha</option>
+              <option value="SDLC">SDLC</option>
+              <option value="DLC">DLC</option>
+            </select>
+            <button id="refreshBtn" class="btn btn-ghost btn-sm" data-i18n="register.refresh">Refresh</button>
+          </div>
+        </div>
+
+        <div class="stats-strip" id="statsStrip"></div>
+
+        <div class="ledger-wrap">
+          <table class="ledger" id="ledgerTable">
+            <thead>
+              <tr>
+                <th data-i18n="register.table.id">Claim ID</th>
+                <th data-i18n="register.table.applicant">Applicant</th>
+                <th data-i18n="register.table.village">Village</th>
+                <th data-i18n="register.table.type">Type</th>
+                <th data-i18n="register.table.stage">Stage</th>
+                <th data-i18n="register.table.date">Filed on</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerBody">
+              <tr class="ledger-empty">
+                <td colspan="6" data-i18n="register.loading">Loading claims…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ TAB: OFFICIALS REVIEW (Module 3) ============ -->
+      <section id="tab-officials" class="tab-panel">
+        <div class="officials-note">
+          This view is for Gram Sabha / SDLC / DLC officials only, and requires
+          logging in with the matching role. AI classification below is a
+          <strong>suggestion to speed up review</strong> — it does not verify
+          document authenticity or detect fraud, and nothing counts toward the
+          Rule 13 checklist until an officer explicitly confirms it.
+        </div>
+
+        <div id="officialsLoginPrompt" class="officials-login-prompt">
+          <p>Log in as a Gram Sabha, SDLC, or DLC officer to review claims.</p>
+          <button id="officialsLoginBtn" class="btn btn-primary btn-sm">Log in</button>
+        </div>
+
+        <div id="officialsPanel" class="officials-panel" hidden>
+          <div class="register-toolbar">
+            <div class="register-filters">
+              <select id="officialsStageSelect"></select>
+              <button id="officialsRefreshBtn" class="btn btn-ghost btn-sm">Refresh</button>
+            </div>
+          </div>
+
+          <div class="stats-strip" id="officialsStatsStrip"></div>
+
+          <div class="ledger-wrap">
+            <table class="ledger" id="officialsLedgerTable">
+              <thead>
+                <tr>
+                  <th>Claim ID</th>
+                  <th>Applicant</th>
+                  <th>Village</th>
+                  <th>Type</th>
+                  <th>Days Pending</th>
+                  <th>SLA</th>
+                </tr>
+              </thead>
+              <tbody id="officialsLedgerBody">
+                <tr class="ledger-empty">
+                  <td colspan="6">Loading queue…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Detail drawer -->
+    <div id="drawerOverlay" class="drawer-overlay"></div>
+    <aside id="claimDrawer" class="claim-drawer" aria-hidden="true">
+      <button id="drawerClose" class="drawer-close" aria-label="Close" data-i18n="drawer.close">✕</button>
+      <div id="drawerContent" class="drawer-content"></div>
+    </aside>
+
+    <!-- Officials review drawer (Module 3) — separate from the citizen drawer above -->
+    <div id="officialsDrawerOverlay" class="drawer-overlay"></div>
+    <aside id="officialsDrawer" class="claim-drawer officials-drawer" aria-hidden="true">
+      <button id="officialsDrawerClose" class="drawer-close" aria-label="Close">✕</button>
+      <div id="officialsDrawerContent" class="drawer-content"></div>
+    </aside>
+
+    <!-- Login modal -->
+    <div id="loginOverlay" class="drawer-overlay"></div>
+    <div id="loginModal" class="login-modal" aria-hidden="true" role="dialog" aria-labelledby="loginTitle">
+      <button id="loginModalClose" class="drawer-close" aria-label="Close">✕</button>
+      <h2 id="loginTitle">Log in</h2>
+      <p class="login-modal-sub">TribalEarth AI uses separate logins per role — Applicant, Gram Sabha, SDLC, and DLC
+        each see and can act on only what's theirs.</p>
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginUsername">Username</label>
+          <input type="text" id="loginUsername" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" autocomplete="current-password" required>
+        </div>
+        <div id="loginError" class="login-error" hidden></div>
+        <button type="submit" class="btn btn-primary" id="loginSubmitBtn">Log in</button>
+      </form>
+      <div class="login-demo-hint">
+        <strong>Demo accounts</strong> (see README for details):<br>
+        applicant1 / applicant123 &middot; gramsabha1 / gramsabha123 &middot;
+        sdlc1 / sdlc123 &middot; dlc1 / dlc123
+      </div>
     </div>
-  </div>
-</div>
 
-<script src="/js/i18n/languages.js"></script>
-<script src="/js/i18n/config.js"></script>
-<script src="/js/i18n/bilingual.js"></script>
-<script src="/js/auth.js"></script>
-<script src="/js/app.js"></script>
-<script src="/js/voice.js"></script>
-<script src="/js/officials.js"></script>
+    <!-- Onboarding Modal -->
+    <div id="onboardingModal" class="onboarding-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="onboardingTitle">
+      <div class="onboarding-content">
+        <h2 id="onboardingTitle" data-i18n="onboarding.title">Welcome to TribalEarth AI</h2>
+        <p data-i18n="onboarding.desc">Select your language to access the Forest Rights Act (FRA) claim management
+          platform.</p>
+        <div class="onboarding-languages" id="onboardingLangList"></div>
+        <button id="onboardingStartBtn" class="btn btn-primary" data-i18n="onboarding.start">Get Started</button>
+      </div>
+    </div>
+
+    <!-- Voice status pill: shows ready/listening/processing/success/error states -->
+    <div id="voiceStatusPill" class="voice-status-pill" aria-live="polite" hidden>
+      <span id="voiceStatusIcon" class="voice-status-icon">●</span>
+      <span id="voiceStatusText" class="voice-status-text"></span>
+    </div>
+
+    <!-- Guided "Fill Using Voice" modal -->
+    <div id="voiceGuidedOverlay" class="drawer-overlay"></div>
+    <div id="voiceGuidedModal" class="voice-guided-modal" aria-hidden="true" role="dialog"
+      aria-labelledby="voiceGuidedTitle">
+      <div class="voice-guided-content">
+        <button type="button" id="voiceGuidedClose" class="drawer-close" aria-label="Close">✕</button>
+        <h2 id="voiceGuidedTitle" data-i18n="voice.guided.title">Fill Using Voice</h2>
+        <p id="voiceGuidedIntro" data-i18n="voice.guided.intro">We'll ask for a few details, one at a time. Speak
+          clearly after each question.</p>
+
+        <div id="voiceGuidedQuestion" class="voice-guided-question"></div>
+        <div id="voiceGuidedStatus" class="voice-guided-status"></div>
+
+        <div id="voiceGuidedReview" class="voice-guided-review" hidden></div>
+
+        <div class="voice-guided-actions">
+          <button type="button" id="voiceGuidedSkip" class="btn btn-ghost btn-sm" data-i18n="voice.guided.skip">Skip
+            this question</button>
+          <button type="button" id="voiceGuidedMic" class="btn btn-primary voice-guided-mic">🎙️</button>
+        </div>
+      </div>
+    </div>
+  </div> <!-- End of appContainer -->
+
+  <script src="/js/i18n/languages.js"></script>
+  <script src="/js/i18n/config.js"></script>
+  <script src="/js/i18n/bilingual.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/landing.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/voice.js"></script>
+  <script src="/js/officials.js"></script>
 </body>
+
 </html>
