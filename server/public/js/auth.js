@@ -125,16 +125,25 @@
     const tabFile = document.querySelector('.tab-btn[data-tab="file"]');
     const tabRegister = document.querySelector('.tab-btn[data-tab="register"]');
     const tabOfficials = document.querySelector('.tab-btn[data-tab="officials"]');
+    const tabMyClaims = document.querySelector('.tab-btn[data-tab="myclaims"]');
     
     if (!tabFile || !tabRegister || !tabOfficials) return;
 
     if (!role || role === 'applicant') {
       tabFile.style.display = '';
-      tabRegister.style.display = '';
+      if (tabMyClaims) {
+        tabMyClaims.style.display = '';
+        tabMyClaims.hidden = false;
+      }
+      tabRegister.style.display = 'none';
       tabOfficials.style.display = 'none';
     } else {
       // Officer roles (gram_sabha, sdlc, dlc)
       tabFile.style.display = 'none';
+      if (tabMyClaims) {
+        tabMyClaims.style.display = 'none';
+        tabMyClaims.hidden = true;
+      }
       tabRegister.style.display = '';
       tabOfficials.style.display = '';
     }
@@ -142,7 +151,7 @@
     // Fallback to activate first visible tab if active tab becomes hidden
     const activeTabBtn = document.querySelector('.tab-btn.is-active');
     if (activeTabBtn && activeTabBtn.style.display === 'none') {
-      const visibleTabs = [tabFile, tabRegister, tabOfficials].filter(t => t.style.display !== 'none');
+      const visibleTabs = [tabFile, tabMyClaims, tabRegister, tabOfficials].filter(t => t && t.style.display !== 'none');
       if (visibleTabs.length > 0) {
         visibleTabs[0].click();
       }
@@ -198,6 +207,12 @@
       }
       setSession({ token: data.token, role: data.role, displayName: data.displayName });
       closeLoginModal();
+      
+      if (data.role === 'applicant') {
+        document.querySelector('.tab-btn[data-tab="myclaims"]')?.click();
+      } else {
+        document.querySelector('.tab-btn[data-tab="officials"]')?.click();
+      }
     } catch (err) {
       loginError.textContent = "Could not reach the server. Please try again.";
       loginError.hidden = false;

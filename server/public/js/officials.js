@@ -113,7 +113,7 @@
       .map(
         (c) => `
       <tr data-claim-id="${c.claimId}">
-        <td><span class="claim-id-chip">${c.claimId}</span>${c.priorRejection ? '<span class="escalated-badge">Escalated</span>' : ""}</td>
+        <td><span class="claim-id-chip">${c.claimId}</span>${c.priorRejection ? '<span class="escalated-badge">Escalated</span>' : ""}${c.appeal ? '<span class="escalated-badge">Appealed</span>' : ""}</td>
         <td>${c.applicantName}</td>
         <td>${c.village}</td>
         <td><span class="type-badge type-${c.claimType}">${c.claimType}</span></td>
@@ -146,12 +146,14 @@
   }
 
   async function renderClaimReview(claimId) {
-    const [claimRes, checklistRes] = await Promise.all([
+    const [claimRes, checklistRes, geoRes] = await Promise.all([
       window.Auth.authFetch(`${API_BASE}/claims/${claimId}`),
       fetch(`${API_BASE}/claims/${claimId}/checklist`),
+      window.Auth.authFetch(`${API_BASE}/claims/${claimId}/geo`)
     ]);
     const claimData = await claimRes.json();
     const checklist = await checklistRes.json();
+    const geoData = geoRes.ok ? await geoRes.json() : null;
 
     if (!claimRes.ok) {
       drawerContent.innerHTML = `<p>${claimData.error}</p>`;
@@ -165,6 +167,14 @@
         <strong>Escalated from ${claim.priorRejection.stage}</strong> — rejected by ${claim.priorRejection.officerName}
         on ${new Date(claim.priorRejection.timestamp).toLocaleDateString("en-IN")}:
         <p>&ldquo;${claim.priorRejection.justification}&rdquo;</p>
+      </div>`
+      : "";
+
+    const appealHtml = claim.appeal
+      ? `
+      <div class="prior-rejection-banner">
+        <strong>Appealed by applicant</strong> on ${new Date(claim.appeal.timestamp).toLocaleDateString("en-IN")}:
+        <p>&ldquo;${claim.appeal.grounds}&rdquo;</p>
       </div>`
       : "";
 
@@ -185,10 +195,26 @@
       <div class="drawer-meta"><span class="claim-id-chip">${claim.claimId}</span> · ${claim.village}, ${claim.district}, ${claim.state} · <span class="type-badge type-${claim.claimType}">${claim.claimType}</span></div>
 
       ${priorRejectionHtml}
+      ${appealHtml}
 
       <div class="drawer-section-title">Documents &amp; AI-assisted classification</div>
       <p class="officials-drawer-note">Suggestions only — tick "Confirm" to have a document count toward the Rule 13 checklist.</p>
       <div id="docsContainer">${docsHtml}</div>
+
+      <div class="drawer-section-title">Map Verification Support</div>
+      <p class="officials-drawer-note">Map is verification support. Check against satellite imagery and nearby claims.</p>
+      <div id="officialsMapContainer" style="height: 350px; width: 100%; border: 1px solid var(--border-color); border-radius: 4px; background: #eee; margin-bottom: 8px;"></div>
+      <div id="officialsMapFlags" class="map-flags-container"></div>
+      <div class="map-check-panel" style="margin-bottom: 24px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px;">
+        <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer;">
+          <input type="checkbox" id="mapCheckToggle"> Location checked on map
+        </label>
+        <div id="mapCheckObservationPanel" hidden style="margin-top: 12px;">
+          <textarea id="mapCheckObservation" rows="2" placeholder="Add observation (optional)..." style="width:100%; border:1px solid #d1d5db; border-radius:4px; padding:8px;"></textarea>
+          <button type="button" id="mapCheckConfirmBtn" class="btn btn-primary btn-sm" style="margin-top:8px;">Save Observation</button>
+        </div>
+        <div id="mapCheckStatus" style="margin-top:8px; font-size:12.5px; color:var(--ink-soft);"></div>
+      </div>
 
       <div class="drawer-section-title">Rule 13 evidence checklist</div>
       ${checklistHtml}
@@ -214,8 +240,140 @@
       <div id="decisionMsg" class="decision-msg"></div>
     `;
 
+    drawerContent.querySelectorAll(".auth-doc-link").forEach(link => {
+      link.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const r = await window.Auth.authFetch(link.dataset.url);
+        if (!r.ok) return alert("Failed to fetch document");
+        const blob = await r.blob();
+        const objUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = objUrl;
+        a.download = link.textContent;
+        a.click();
+        URL.revokeObjectURL(objUrl);
+      });
+    });
+
     wireDocumentActions(claim.claimId);
     wireDecisionActions(claim.claimId);
+    if (geoData && (geoData.location || geoData.geometry)) {
+      wireOfficialsMap(claim.claimId, geoData, claim.mapCheck);
+    } else {
+      document.getElementById('officialsMapContainer').innerHTML = "<p style='padding:20px; text-align:center;'>No map data provided for this claim.</p>";
+      document.getElementById('officialsMapFlags').innerHTML = "";
+    }
+  }
+
+  function wireOfficialsMap(claimId, geo, mapCheck) {
+    const mapEl = document.getElementById('officialsMapContainer');
+    if (!mapEl) return;
+    
+    // Check if we need to clean up old map
+    if (mapEl._leaflet_id) {
+      mapEl._leaflet_id = null;
+      mapEl.innerHTML = '';
+    }
+
+    const map = L.map('officialsMapContainer', {
+      center: geo.location ? [geo.location.lat, geo.location.lng] : [20.5937, 78.9629],
+      zoom: 15
+    });
+
+    L.tileLayer(window.MapConfig.satelliteTiles.url, {
+      attribution: window.MapConfig.satelliteTiles.attribution,
+      maxZoom: 19
+    }).addTo(map);
+    
+    const streetLayer = L.tileLayer(window.MapConfig.streetTiles.url, { maxZoom: 19 });
+    L.control.layers({ "Satellite": map._layers[Object.keys(map._layers)[0]], "Streets": streetLayer }).addTo(map);
+
+    let claimLayer = null;
+    if (geo.geometry) {
+      claimLayer = L.geoJSON(geo.geometry, { style: { color: '#0055ff', weight: 2, fillOpacity: 0.2 } }).addTo(map);
+      map.fitBounds(claimLayer.getBounds());
+    } else if (geo.location) {
+      claimLayer = L.marker([geo.location.lat, geo.location.lng]).addTo(map);
+      map.setView([geo.location.lat, geo.location.lng], 16);
+    }
+
+    // Nearby claims
+    if (geo.nearby && geo.nearby.length > 0) {
+      const markers = L.featureGroup().addTo(map);
+      geo.nearby.forEach(other => {
+        const color = other.anonymized ? '#888' : '#e11d48';
+        const label = other.anonymized ? 'Anonymized Claim' : `Claim: ${other.claimId}`;
+        
+        if (other.geometry) {
+          L.geoJSON(other.geometry, { style: { color, weight: 1, fillOpacity: 0.1 } }).bindPopup(label).addTo(markers);
+        } else if (other.location) {
+          L.circleMarker([other.location.lat, other.location.lng], { radius: 6, color, fillOpacity: 0.5 }).bindPopup(label).addTo(markers);
+        }
+      });
+      if (!claimLayer) map.fitBounds(markers.getBounds());
+    }
+
+    setTimeout(() => map.invalidateSize(), 200);
+
+    // Flags
+    const flagsEl = document.getElementById('officialsMapFlags');
+    if (geo.flags && geo.flags.length > 0) {
+      flagsEl.innerHTML = geo.flags.map(f => `<div class="map-flag alert alert-warning" style="margin-bottom:8px;"><strong>${f.label}:</strong> ${f.description}</div>`).join('');
+    }
+
+    // Checkbox logic
+    const toggle = document.getElementById('mapCheckToggle');
+    const obsPanel = document.getElementById('mapCheckObservationPanel');
+    const obsInput = document.getElementById('mapCheckObservation');
+    const saveBtn = document.getElementById('mapCheckConfirmBtn');
+    const statusEl = document.getElementById('mapCheckStatus');
+
+    if (mapCheck && mapCheck.officerConfirmed) {
+      toggle.checked = true;
+      obsPanel.hidden = false;
+      obsInput.value = mapCheck.observation || "";
+      statusEl.textContent = `Confirmed by ${mapCheck.confirmedBy} on ${new Date(mapCheck.confirmedAt).toLocaleDateString()}`;
+    }
+
+    toggle.addEventListener('change', () => {
+      obsPanel.hidden = !toggle.checked;
+      if (!toggle.checked) {
+        // Send uncheck immediately
+        saveMapCheck(false, "");
+      }
+    });
+
+    saveBtn.addEventListener('click', () => {
+      saveMapCheck(true, obsInput.value);
+    });
+
+    async function saveMapCheck(checked, observation) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+      try {
+        const res = await window.Auth.authFetch(`${API_BASE}/claims/${claimId}/map-check`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ locationChecked: checked, observation })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          if (checked) {
+            statusEl.textContent = `Saved observation.`;
+          } else {
+            statusEl.textContent = `Unchecked map verification.`;
+            obsInput.value = "";
+          }
+        } else {
+          alert(data.error);
+          toggle.checked = !checked;
+        }
+      } catch(e) {
+        alert("Failed to save map check.");
+      }
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Observation";
+    }
   }
 
   function renderDocumentCard(doc, idx) {
@@ -251,7 +409,7 @@
     return `
       <div class="doc-review-card" data-doc-idx="${idx}">
         <div class="doc-review-header">
-          <a href="${doc.url}" target="_blank" rel="noopener">${doc.originalName}</a>
+          <a href="#" class="auth-doc-link" data-url="${doc.url}">${doc.originalName}</a>
         </div>
         ${statusHtml}
       </div>

@@ -4,7 +4,8 @@
     "sub": "Forest Rights Claim Register",
     "nav": {
       "file": "File a Claim",
-      "register": "Claims Register"
+      "register": "Claims Register",
+      "myclaims": "My Claims"
     }
   },
   "stepper": {
@@ -193,5 +194,20 @@
       "skip": "Skip this question",
       "allSet": "All set — your answers are already filled in."
     }
+  },
+  "myclaims": {
+    "title": "My Claims",
+    "subtitle": "Track the status of your submitted claims",
+    "loading": "Loading your claims...",
+    "empty": "No claims found.",
+    "status": "Status",
+    "rejectedBy": "Rejected by"
+  },
+  "appeal": {
+    "title": "File an Appeal",
+    "subtitle": "You have the right to appeal a Gram Sabha rejection to the SDLC within 60 days.",
+    "groundsLabel": "Grounds for Appeal",
+    "groundsPlaceholder": "Explain why the claim should not have been rejected...",
+    "submitBtn": "Submit Appeal"
   }
 }

@@ -10,6 +10,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Odia:wght@400;500;600;700&family=Noto+Sans+Ol+Chiki:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap"
     rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="/vendor/leaflet-draw/leaflet.draw.css" />
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
 
@@ -31,28 +33,21 @@
           Transparent Claims.<br>
           <span class="landing-headline-highlight">Verified by the Process.</span>
         </h1>
-        <p class="landing-subhead">
-          TribalEarth AI digitizes the Gram Sabha → SDLC → DLC forest rights
-          pipeline — every claim tracked, every rejection justified, every
-          decision auditable.
-        </p>
+
 
         <div class="landing-features">
           <div class="landing-feature-row">
-            <span class="landing-icon">🎙️</span>
             <div class="landing-feature-text">
               <strong>AI-Assisted Document Review</strong> — classifies evidence against FRA Rule 13, officer confirms
               every match
             </div>
           </div>
           <div class="landing-feature-row">
-            <span class="landing-icon">👥</span>
             <div class="landing-feature-text">
               <strong>Role-Separated Review Pipeline</strong> — Gram Sabha, SDLC, and DLC each see only their own queue
             </div>
           </div>
           <div class="landing-feature-row">
-            <span class="landing-icon">🔒</span>
             <div class="landing-feature-text">
               <strong>Full Audit Trail</strong> — every claim, stage, and rejection reason permanently recorded
             </div>
@@ -118,7 +113,7 @@
         </div>
       </div>
       <div class="landing-footer">
-        🔒 Role-based access · FRA Rules 2007 compliant · TribalEarth AI
+        Role-based access · FRA Rules 2007 compliant · TribalEarth AI
       </div>
     </div>
   </div>
@@ -159,8 +154,11 @@
         <button class="tab-btn" data-tab="register" role="tab" aria-selected="false">
           <span class="tab-index">02</span> <span data-i18n="header.nav.register">Claims Register</span>
         </button>
+        <button class="tab-btn" data-tab="myclaims" role="tab" aria-selected="false" hidden>
+          <span class="tab-index">03</span> <span data-i18n="header.nav.myclaims">My Claims</span>
+        </button>
         <button class="tab-btn" data-tab="officials" role="tab" aria-selected="false">
-          <span class="tab-index">03</span> Officials Review
+          <span class="tab-index">04</span> Officials Review
         </button>
       </nav>
     </header>
@@ -352,6 +350,18 @@
                     <input type="number" id="yearsOfCultivation" name="yearsOfCultivation" min="0" placeholder="e.g. 12"
                       data-i18n-placeholder="form.step2.cultivationYearsPlaceholder">
                   </div>
+                  <div class="field field-span2" id="mapField">
+                    <label>Mark Location / Boundary (Map)</label>
+                    <p class="field-help">Pin your location or draw a boundary polygon on the map.</p>
+                    <div class="map-toolbar" style="margin-bottom:8px;">
+                      <button type="button" class="btn btn-sm btn-ghost" id="mapLocateBtn">Use my current location</button>
+                      <button type="button" class="btn btn-sm btn-ghost read-aloud-btn" data-text="Pin your location or draw a boundary polygon on the map. Use the 'Use my current location' button to center the map on where you are right now.">🔊 Read Aloud</button>
+                    </div>
+                    <div id="filingMap" style="height: 350px; width: 100%; border-radius: 4px; border: 1px solid var(--border-color); background: #eee;"></div>
+                    <input type="hidden" id="geometry" name="geometry">
+                    <input type="hidden" id="locationSource" name="locationSource">
+                    <input type="hidden" id="accuracyMeters" name="accuracyMeters">
+                  </div>
                   <div class="field">
                     <label for="latitude"><span data-i18n="form.step2.lat">Latitude</span> <span class="hint"
                         data-i18n="form.step2.optional">(optional)</span></label>
@@ -453,6 +463,18 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <!-- ============ TAB: MY CLAIMS ============ -->
+      <section id="tab-myclaims" class="tab-panel">
+        <div class="myclaims-header">
+          <h2 data-i18n="myclaims.title">My Claims</h2>
+          <p data-i18n="myclaims.subtitle">Track the status of your submitted claims</p>
+        </div>
+
+        <div id="myclaimsList" class="myclaims-list">
+          <div class="ledger-empty" data-i18n="myclaims.loading">Loading your claims…</div>
         </div>
       </section>
 
@@ -585,13 +607,41 @@
         </div>
       </div>
     </div>
+
+    <!-- Appeal Modal -->
+    <div id="appealOverlay" class="drawer-overlay"></div>
+    <div id="appealModal" class="login-modal" aria-hidden="true" role="dialog" aria-labelledby="appealTitle">
+      <button id="appealModalClose" class="drawer-close" aria-label="Close">✕</button>
+      <h2 id="appealTitle" data-i18n="appeal.title">File an Appeal</h2>
+      <p class="login-modal-sub" data-i18n="appeal.subtitle">You have the right to appeal a Gram Sabha rejection to the
+        SDLC within 60 days.</p>
+
+      <form id="appealForm">
+        <input type="hidden" id="appealClaimId" name="appealClaimId">
+        <div class="field">
+          <label for="appealGrounds"><span data-i18n="appeal.groundsLabel">Grounds for Appeal</span> <span
+              class="req">*</span></label>
+          <textarea id="appealGrounds" name="appealGrounds" required rows="4"
+            placeholder="Explain why the claim should not have been rejected..."
+            data-i18n-placeholder="appeal.groundsPlaceholder"></textarea>
+        </div>
+        <div id="appealError" class="login-error" hidden></div>
+        <button type="submit" class="btn btn-primary" id="appealSubmitBtn" data-i18n="appeal.submitBtn">Submit
+          Appeal</button>
+      </form>
+    </div>
+
   </div> <!-- End of appContainer -->
 
+  <script src="/vendor/leaflet/leaflet.js"></script>
+  <script src="/vendor/leaflet-draw/leaflet.draw.js"></script>
+  <script src="/js/mapConfig.js"></script>
   <script src="/js/i18n/languages.js"></script>
   <script src="/js/i18n/config.js"></script>
   <script src="/js/i18n/bilingual.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/landing.js"></script>
+  <script src="/js/map.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/voice.js"></script>
   <script src="/js/officials.js"></script>

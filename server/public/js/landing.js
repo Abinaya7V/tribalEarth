@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Navigate to the correct tab based on role
         if (data.role === 'applicant') {
-          document.querySelector('.tab-btn[data-tab="file"]')?.click();
+          document.querySelector('.tab-btn[data-tab="myclaims"]')?.click();
         } else {
           document.querySelector('.tab-btn[data-tab="officials"]')?.click();
         }

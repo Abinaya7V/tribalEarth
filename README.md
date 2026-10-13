@@ -84,14 +84,11 @@ project.
 
 ## Where this fits in the bigger picture
 
-This is **Module 1 + Module 3** of five (Module 3 built directly on
-Module 1's pipeline). Remaining modules:
+This is **Module 1 + Module 3 + Module 4** of five (Module 3 built directly on
+Module 1's pipeline, and Module 4 added applicant privacy and tracking). Remaining modules:
 
-- **Module 2** (WebGIS Verification Support) — will read the `location`
-  field on each claim to overlay it on satellite imagery for the Gram Sabha.
-- **Module 4** (Applicant Status & Appeal Portal) — will read a claim's
-  `auditTrail` to show applicants exactly where their claim is and why,
-  including the officer's written rejection reason from Module 3.
+- **Module 2** (WebGIS Verification Support) — Included. Reads the `location` and `geometry`
+  fields on each claim to overlay it on satellite imagery. Validates area, distance, and overlap.
 - **Module 5** (Government Analytics Dashboard) — will consume `/api/stats`
   and expand it into district/state-level analytics.
 
@@ -188,5 +185,40 @@ image files (jpg/png/etc.) — a stated scope limit, not a silent gap.
 | GET    | `/api/officials/queue?stage=`                 | officer role matching that stage        |
 | POST   | `/api/claims/:id/documents/:index/classify`   | officer role matching claim's stage     |
 | POST   | `/api/claims/:id/documents/:index/confirm`    | officer role matching claim's stage     |
-| GET    | `/api/claims/:id/checklist`                   | none (public transparency view)         |
 | POST   | `/api/claims/:id/decision`                    | officer role matching claim's stage     |
+
+## Module 4 & Privacy Fix — Applicant Tracker and Appeals
+
+### Privacy Fix
+The platform now enforces strict privacy:
+- **No anonymous access**: All claim endpoints (listing, details, stats, document downloads) now require a valid authenticated session.
+- **Data segmentation**: Applicants (`ownerId`) can only see their own claims (`GET /api/my/claims`). Officers can view claims in their queue, but applicants never see internal officer notes or other applicants' data.
+- **Secure File Delivery**: Files are served through `GET /api/claims/:id/documents/:docId`, stripping the public `/uploads` directory and ensuring only authorized users can read attachments.
+
+### Applicant "My Claims" Tracker
+- A localized, accessible applicant dashboard showing claim stage, status (Submitted, Under Review, Approved, Rejected), and timeline.
+- **Clear Rejection Reasons**: If a claim is rejected, the applicant sees exactly *why* and by *whom*, addressing opaque rejections. A native "Read Aloud" button helps low-literacy users.
+- **Appeals**: Applicants have exactly one chance to appeal a Gram Sabha rejection to the SDLC within 60 days. Ground for appeal must be provided, and the appeal resets the claim stage and escalates it directly to SDLC.
+
+### New API routes for Applicants
+| Method | Route                                        | Auth required                          |
+|--------|-----------------------------------------------|-----------------------------------------|
+| GET    | `/api/my/claims`                              | Applicant role                          |
+| GET    | `/api/my/claims/:id`                          | Applicant role (must own claim)         |
+| POST   | `/api/my/claims/:id/appeal`                   | Applicant role (must own claim, GS rejection, within 60d) |
+| GET    | `/api/claims/:id/documents/:docId`            | Applicant (owner) or assigned Officer   |
+
+## Module 2 — WebGIS Map Verification Support
+
+### Geo-Endpoints and Privacy
+- **Applicant Mapping**: The filing form now includes an interactive Leaflet map, letting applicants drop a pin using device GPS or trace a boundary polygon.
+- **Verification Support**: Officers see a satellite map overlay of the claim boundary and any nearby anonymized claims.
+- **Automated Geometry Checking**: Turf.js runs offline on the server to catch polygon kinks (self-intersections), compute area (hectares), and flag potential overlapping boundaries.
+- **Privacy First**: Nearby claims shown on the map are strictly governed by role-based access. Claims belonging to other individuals are visible only as generic "Anonymized Claim" dots or polygons, stripping personal metadata.
+- **Tiles Configuration**: Managed in `server/public/js/mapConfig.js`, enabling easy swapping of Esri/OpenStreetMap tile endpoints.
+
+| Method | Route                                        | Auth required                          |
+|--------|-----------------------------------------------|-----------------------------------------|
+| PATCH  | `/api/my/claims/:id/location`                 | Applicant role                          |
+| GET    | `/api/claims/:id/geo`                         | Applicant (owner) or assigned Officer   |
+| POST   | `/api/claims/:id/map-check`                   | Officer role matching claim's stage     |

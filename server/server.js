@@ -25,6 +25,9 @@ const { extractClaimFields } = require("./services/extractionService");
 const ocrService = require("./services/ocrService");
 const documentClassificationService = require("./services/documentClassificationService");
 const authService = require("./services/authService");
+const geoService = require("./services/geoService");
+const crypto = require("crypto");
+const rateLimit = require("express-rate-limit");
 
 // Load .env if present (Node 22 built-in — no dotenv dependency needed).
 // Safe to call even when the file doesn't exist.
@@ -69,8 +72,25 @@ function readClaims() {
   return JSON.parse(fs.readFileSync(CLAIMS_FILE, "utf-8"));
 }
 function writeClaims(claims) {
-  fs.writeFileSync(CLAIMS_FILE, JSON.stringify(claims, null, 2), "utf-8");
+  const tmp = CLAIMS_FILE + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(claims, null, 2), "utf-8");
+  fs.renameSync(tmp, CLAIMS_FILE);
 }
+
+// A1. Claim ownership migration
+function migrateLegacyClaims() {
+  const claims = readClaims();
+  let changed = false;
+  claims.forEach(c => {
+    if (c.ownerId === undefined) {
+      c.ownerId = null;
+      c.legacy = true;
+      changed = true;
+    }
+  });
+  if (changed) writeClaims(claims);
+}
+migrateLegacyClaims();
 
 // ---------- claim ID generator ----------
 // Format: FRA-<year>-<state code>-<4 char code>  e.g. FRA-2026-CG-9F3K
@@ -85,8 +105,8 @@ function generateClaimId(stateCode) {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename: (req, file, cb) => {
-    const safeName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    cb(null, `${Date.now()}-${safeName}`);
+    const ext = path.extname(file.originalname);
+    cb(null, `${crypto.randomUUID()}${ext}`);
   },
 });
 const upload = multer({
@@ -115,7 +135,6 @@ const ALLOWED_AUDIO_MIME_TYPES = [
 
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static(UPLOADS_DIR));
 app.use(express.static(path.join(__dirname, "public")));
 
 // ---------- authentication ----------
@@ -136,6 +155,13 @@ function attachUser(req, res, next) {
 }
 app.use(attachUser);
 
+function requireAuth(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ error: "Login required." });
+  }
+  next();
+}
+
 /** Rejects the request unless req.user's role is in allowedRoles. */
 function requireRole(...allowedRoles) {
   return (req, res, next) => {
@@ -147,6 +173,41 @@ function requireRole(...allowedRoles) {
     }
     next();
   };
+}
+
+function stripClaimForApplicant(claim, user) {
+  if (user.role !== "applicant") return claim;
+  const stripped = { ...claim };
+  if (stripped.documents) {
+    stripped.documents = stripped.documents.map(d => {
+      const dStripped = { ...d };
+      delete dStripped.review;
+      return dStripped;
+    });
+  }
+  if (stripped.auditTrail) {
+    stripped.auditTrail = stripped.auditTrail.map(a => {
+      const roleStr = a.stage; 
+      return { ...a, actor: (a.actor === "Applicant / FRC" || a.actor === "System" || a.actor === "Applicant") ? a.actor : `${roleStr} Officer` };
+    });
+  }
+  if (stripped.priorRejection) {
+    stripped.priorRejection = { ...stripped.priorRejection, officerName: `${stripped.priorRejection.stage} Officer` };
+  }
+  return stripped;
+}
+
+function canReadClaim(claim, user) {
+  if (user.role === "applicant") {
+    return claim.ownerId === user.username && !claim.legacy;
+  }
+  const allowedStage = Object.keys(authService.STAGE_ROLE).find(key => authService.STAGE_ROLE[key] === user.role);
+  if (!allowedStage) return false;
+  if (claim.legacy) {
+    return claim.currentStage === allowedStage;
+  }
+  if (claim.currentStage === allowedStage) return true;
+  return false;
 }
 
 /**
@@ -170,7 +231,13 @@ function requireStageRole(req, res, next) {
   next();
 }
 
-app.post("/api/auth/login", (req, res) => {
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: "Too many login attempts, please try again later." }
+});
+
+app.post("/api/auth/login", loginLimiter, (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
     return res.status(400).json({ error: "username and password are required." });
@@ -250,12 +317,14 @@ app.post("/api/claims", requireRole("applicant"), upload.array("documents", 6), 
   const documents = (req.files || []).map((f) => ({
     originalName: f.originalname,
     storedName: f.filename,
-    url: `/uploads/${f.filename}`,
+    url: `/api/claims/${claimId}/documents/${f.filename}`,
     sizeBytes: f.size,
   }));
 
   const claim = {
     claimId,
+    ownerId: req.user.username,
+    legacy: false,
     applicantName,
     guardianName: guardianName || "",
     village,
@@ -270,6 +339,10 @@ app.post("/api/claims", requireRole("applicant"), upload.array("documents", 6), 
       latitude && longitude
         ? { lat: parseFloat(latitude), lng: parseFloat(longitude) }
         : null,
+    geometry: req.body.geometry ? JSON.parse(req.body.geometry) : null,
+    locationSource: req.body.locationSource || null,
+    accuracyMeters: req.body.accuracyMeters ? parseFloat(req.body.accuracyMeters) : null,
+    computedAreaHa: req.body.geometry ? geoService.computeAreaHa(JSON.parse(req.body.geometry)) : null,
     language: language || "en",
     bilingualData: bilingualData ? JSON.parse(bilingualData) : null,
     documents,
@@ -298,8 +371,9 @@ app.post("/api/claims", requireRole("applicant"), upload.array("documents", 6), 
  * GET /api/claims
  * Lists claims. Optional query filters: village, district, state, claimType, stage, status
  */
-app.get("/api/claims", (req, res) => {
+app.get("/api/claims", requireAuth, (req, res) => {
   let claims = readClaims();
+  claims = claims.filter(c => canReadClaim(c, req.user));
   const { village, district, state, claimType, stage, status, q } = req.query;
 
   if (village) claims = claims.filter((c) => c.village === village);
@@ -319,17 +393,240 @@ app.get("/api/claims", (req, res) => {
   }
 
   claims.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  res.json({ count: claims.length, claims });
+  res.json({ count: claims.length, claims: claims.map(c => stripClaimForApplicant(c, req.user)) });
 });
+
+/**
+ * GET /api/claims/:id/geo
+ * Returns geometry, location flags, and anonymized nearby claims for the map view.
+ */
+app.get("/api/claims/:id/geo", requireAuth, (req, res) => {
+  const claims = readClaims();
+  const claim = claims.find((c) => c.claimId === req.params.id);
+  if (!claim || !canReadClaim(claim, req.user)) {
+    return res.status(404).json({ error: "Claim not found." });
+  }
+
+  const flags = geoService.computeFlags(claim, claims);
+  
+  // Nearby claims (anonymous dots if they can't be read by this user)
+  const nearby = [];
+  if (claim.geometry || claim.location) {
+    for (const other of claims) {
+      if (other.claimId === claim.claimId) continue;
+      if (!other.geometry && !other.location) continue;
+      
+      const canReadOther = canReadClaim(other, req.user);
+      nearby.push({
+        claimId: canReadOther ? other.claimId : "anonymous",
+        claimType: canReadOther ? other.claimType : "Unknown",
+        location: other.location,
+        geometry: other.geometry,
+        anonymized: !canReadOther
+      });
+    }
+  }
+
+  res.json({
+    location: claim.location,
+    geometry: claim.geometry,
+    locationSource: claim.locationSource,
+    accuracyMeters: claim.accuracyMeters,
+    computedAreaHa: claim.computedAreaHa,
+    flags,
+    nearby
+  });
+});
+
+app.patch("/api/my/claims/:id/location", requireRole("applicant"), (req, res) => {
+  const { latitude, longitude, geometry, locationSource, accuracyMeters } = req.body;
+  const claims = readClaims();
+  const idx = claims.findIndex((c) => c.claimId === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: "Claim not found." });
+  
+  const claim = claims[idx];
+  if (claim.ownerId !== req.user.username || claim.legacy) {
+    return res.status(404).json({ error: "Claim not found." });
+  }
+  
+  // Must be still editable (e.g. submitted or rejected but appealing)
+  if (claim.currentStage !== "Gram Sabha" && claim.status !== "Appealed") {
+    return res.status(400).json({ error: "Location can no longer be edited at this stage." });
+  }
+  
+  if (latitude !== undefined && longitude !== undefined) {
+    if (!geoService.isPointInIndia(parseFloat(latitude), parseFloat(longitude))) {
+      return res.status(400).json({ error: "Coordinates must be inside India." });
+    }
+    claim.location = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+  }
+  
+  if (geometry) {
+    const val = geoService.validatePolygon(geometry);
+    if (!val.valid) return res.status(400).json({ error: val.error });
+    claim.geometry = geometry;
+    claim.computedAreaHa = geoService.computeAreaHa(geometry);
+  }
+  
+  if (locationSource) claim.locationSource = locationSource;
+  if (accuracyMeters) claim.accuracyMeters = parseFloat(accuracyMeters);
+  
+  claim.updatedAt = nowISO();
+  claim.auditTrail.push({
+    stage: claim.currentStage,
+    action: "Location Updated",
+    actor: "Applicant",
+    note: "Location or boundary was updated.",
+    timestamp: claim.updatedAt
+  });
+  
+  writeClaims(claims);
+  res.json({ message: "Location updated successfully.", claim: stripClaimForApplicant(claim, req.user) });
+});
+
 
 /**
  * GET /api/claims/:id
  */
-app.get("/api/claims/:id", (req, res) => {
+app.get("/api/claims/:id", requireAuth, (req, res) => {
   const claims = readClaims();
   const claim = claims.find((c) => c.claimId === req.params.id);
   if (!claim) return res.status(404).json({ error: "Claim not found." });
-  res.json({ claim });
+  if (!canReadClaim(claim, req.user)) return res.status(404).json({ error: "Claim not found." });
+  res.json({ claim: stripClaimForApplicant(claim, req.user) });
+});
+
+app.get("/api/my/claims", requireRole("applicant"), (req, res) => {
+  let claims = readClaims().filter(c => c.ownerId === req.user.username && !c.legacy);
+  
+  const summaries = claims.map(c => {
+    let canAppeal = false;
+    let appealDeadline = null;
+    if (c.status === "Rejected" && c.rejection?.rejectedAtStage === "Gram Sabha" && !c.appeal) {
+      const deadline = new Date(new Date(c.rejection.timestamp).getTime() + 60 * 24 * 60 * 60 * 1000);
+      if (deadline > new Date()) {
+        canAppeal = true;
+        appealDeadline = deadline.toISOString();
+      }
+    }
+    return {
+      id: c.claimId,
+      village: c.village,
+      claimType: c.claimType,
+      status: c.status,
+      stage: c.currentStage,
+      updatedAt: c.updatedAt,
+      isRejected: c.status === "Rejected",
+      canAppeal,
+      appealDeadline
+    };
+  });
+  summaries.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  res.json({ claims: summaries });
+});
+
+app.get("/api/my/claims/:id", requireRole("applicant"), (req, res) => {
+  const claims = readClaims();
+  const claim = claims.find((c) => c.claimId === req.params.id);
+  if (!claim || claim.ownerId !== req.user.username || claim.legacy) {
+    return res.status(404).json({ error: "Claim not found." });
+  }
+
+  let canAppeal = false;
+  let appealDeadline = null;
+  if (claim.status === "Rejected" && claim.rejection?.rejectedAtStage === "Gram Sabha" && !claim.appeal) {
+    const deadline = new Date(new Date(claim.rejection.timestamp).getTime() + 60 * 24 * 60 * 60 * 1000);
+    if (deadline > new Date()) {
+      canAppeal = true;
+      appealDeadline = deadline.toISOString();
+    }
+  }
+
+  const stripped = stripClaimForApplicant(claim, req.user);
+  res.json({ claim: stripped, canAppeal, appealDeadline });
+});
+
+app.post("/api/my/claims/:id/appeal", requireRole("applicant"), (req, res) => {
+  const { grounds } = req.body;
+  if (!grounds || !grounds.trim()) {
+    return res.status(400).json({ error: "Appeal grounds are required." });
+  }
+
+  const claims = readClaims();
+  const idx = claims.findIndex((c) => c.claimId === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: "Claim not found." });
+  const claim = claims[idx];
+
+  if (claim.ownerId !== req.user.username || claim.legacy) {
+    return res.status(404).json({ error: "Claim not found." });
+  }
+  if (claim.appeal) {
+    return res.status(400).json({ error: "Appeal already filed." });
+  }
+  if (claim.status !== "Rejected" || claim.rejection?.rejectedAtStage !== "Gram Sabha") {
+    return res.status(400).json({ error: "Only claims rejected by Gram Sabha can be appealed to SDLC." });
+  }
+
+  const deadline = new Date(new Date(claim.rejection.timestamp).getTime() + 60 * 24 * 60 * 60 * 1000);
+  if (deadline < new Date()) {
+    return res.status(400).json({ error: "Appeal deadline (60 days) has passed." });
+  }
+
+  const timestamp = nowISO();
+  claim.appeal = {
+    grounds: grounds.trim(),
+    filedAt: timestamp,
+    deadline: deadline.toISOString(),
+    status: "filed"
+  };
+  
+  claim.priorRejection = {
+    stage: claim.rejection.rejectedAtStage,
+    officerName: claim.rejection.rejectedByRole,
+    justification: claim.rejection.reason,
+    timestamp: claim.rejection.timestamp
+  };
+  
+  claim.status = "Appealed";
+  claim.currentStage = "SDLC";
+  claim.updatedAt = timestamp;
+  
+  claim.auditTrail.push({
+    stage: "SDLC",
+    action: "Appealed",
+    actor: "Applicant",
+    note: `Appealed Gram Sabha rejection. Grounds: ${grounds.trim()}`,
+    timestamp
+  });
+
+  writeClaims(claims);
+  res.json({ message: "Appeal filed successfully.", claim: stripClaimForApplicant(claim, req.user) });
+});
+
+app.get("/api/claims/:id/documents/:docId", requireAuth, (req, res) => {
+  const claims = readClaims();
+  const claim = claims.find((c) => c.claimId === req.params.id);
+  if (!claim || !canReadClaim(claim, req.user)) {
+    return res.status(404).json({ error: "Claim not found." });
+  }
+
+  const doc = claim.documents.find(d => d.storedName === req.params.docId);
+  if (!doc) return res.status(404).json({ error: "Document not found." });
+
+  const filePath = path.join(UPLOADS_DIR, doc.storedName);
+  const normalizedPath = path.normalize(filePath);
+  if (!normalizedPath.startsWith(UPLOADS_DIR)) {
+    return res.status(403).json({ error: "Invalid path." });
+  }
+
+  if (!fs.existsSync(normalizedPath)) {
+    return res.status(404).json({ error: "File missing." });
+  }
+
+  res.setHeader("Content-Disposition", `inline; filename="${encodeURIComponent(doc.originalName)}"`);
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Cache-Control", "private, no-store");
+  res.sendFile(normalizedPath);
 });
 
 /**
@@ -512,6 +809,41 @@ app.post("/api/claims/:id/documents/:index/confirm", requireStageRole, (req, res
 });
 
 /**
+ * POST /api/claims/:id/map-check
+ * Officer ticks "Location checked on map"
+ */
+app.post("/api/claims/:id/map-check", requireStageRole, (req, res) => {
+  const { observation, locationChecked } = req.body || {};
+  
+  const claims = readClaims();
+  const claimIdx = claims.findIndex((c) => c.claimId === req.params.id);
+  if (claimIdx === -1) return res.status(404).json({ error: "Claim not found." });
+  
+  const claim = claims[idx];
+  const isChecked = Boolean(locationChecked);
+  
+  claim.mapCheck = {
+    officerConfirmed: isChecked,
+    confirmedBy: isChecked ? req.user.displayName : null,
+    confirmedAt: isChecked ? nowISO() : null,
+    observation: observation ? String(observation).trim() : ""
+  };
+  
+  if (observation && observation.trim()) {
+    claim.auditTrail.push({
+      stage: claim.currentStage,
+      action: "Map Observation Added",
+      actor: req.user.displayName,
+      note: String(observation).trim(),
+      timestamp: nowISO()
+    });
+  }
+  
+  writeClaims(claims);
+  res.json({ success: true, mapCheck: claim.mapCheck });
+});
+
+/**
  * GET /api/claims/:id/checklist
  * Rule 13 evidence-category coverage for this claim — counts ONLY
  * officer-confirmed documents (see computeChecklist for why).
@@ -590,8 +922,14 @@ app.post("/api/claims/:id/decision", requireStageRole, (req, res) => {
         justification: justification.trim(),
         timestamp,
       };
+      claim.rejection = {
+        reason: justification.trim(),
+        rejectedAtStage: "SDLC",
+        rejectedByRole: req.user.role,
+        timestamp
+      };
       claim.currentStage = "DLC";
-      claim.status = "Under Review";
+      claim.status = "Escalated to DLC";
       claim.updatedAt = timestamp;
       claim.auditTrail.push({
         stage: "SDLC",
@@ -618,6 +956,12 @@ app.post("/api/claims/:id/decision", requireStageRole, (req, res) => {
     // because that's the explicit design decision here, DLC because
     // it's the final stage with nowhere left to escalate to.
     claim.status = "Rejected";
+    claim.rejection = {
+      reason: justification.trim(),
+      rejectedAtStage: rejectingStage,
+      rejectedByRole: req.user.role,
+      timestamp
+    };
     claim.updatedAt = timestamp;
     claim.auditTrail.push({
       stage: rejectingStage,
@@ -667,7 +1011,7 @@ app.post("/api/claims/:id/decision", requireStageRole, (req, res) => {
  * GET /api/stats
  * Lightweight aggregate counts — feeds a future Module 5 dashboard.
  */
-app.get("/api/stats", (req, res) => {
+app.get("/api/stats", requireAuth, (req, res) => {
   const claims = readClaims();
   const byStage = STAGES.reduce((acc, s) => {
     acc[s] = claims.filter((c) => c.currentStage === s).length;

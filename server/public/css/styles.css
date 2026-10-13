@@ -1261,3 +1261,105 @@ html[dir="rtl"] .site-header .tab-nav {
   font-size: 12px;
   color: var(--ink-faint);
 }
+
+/* ==========================================================
+   Module 4: My Claims Styles
+   ========================================================== */
+
+.myclaims-header {
+  margin-bottom: 24px;
+}
+.myclaims-header h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--forest-dark);
+  margin: 0 0 4px;
+}
+.myclaims-header p {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.myclaims-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.myclaim-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.myclaim-card:hover {
+  border-color: var(--moss);
+  box-shadow: var(--shadow-card);
+}
+.myclaim-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.myclaim-body {
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.myclaim-footer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.status-badge {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+.status-badge.status-submitted { background: var(--paper); color: var(--ink-soft); border: 1px solid var(--line); }
+.status-badge.status-under-review { background: var(--ochre-soft); color: #8A5F1F; }
+.status-badge.status-approved { background: var(--moss-soft); color: var(--forest-dark); }
+.status-badge.status-rejected { background: var(--clay-soft); color: var(--clay); }
+.status-badge.status-escalated-to-dlc { background: var(--ochre); color: var(--paper); }
+.status-badge.status-appealed { background: var(--forest); color: white; }
+
+.rejection-box {
+  background: var(--clay-soft);
+  border: 1px solid var(--clay);
+  border-radius: var(--radius-m);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.rejection-box h4 {
+  margin: 0 0 8px;
+  color: var(--clay);
+  font-size: 14px;
+}
+.rejection-box p {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.appeal-box {
+  background: var(--paper-raised);
+  border: 1px dashed var(--ochre);
+  border-radius: var(--radius-m);
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.appeal-box p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
