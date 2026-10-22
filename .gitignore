@@ -7,3 +7,12 @@ server/data/claims.json.bak
 *.db-wal
 atlas-access.log
 tribalEarth_BACKUP_*/
+
+tribalEarth_BACKUP_*/
+server/tests/temp_atlas_data_*/
+*.db
+*.db-shm
+*.db-wal
+*.bak
+server/demo-data/
+*.log
