@@ -5,13 +5,8 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 
-// Instead of starting the server script, we can require it directly if it exported the app.
-// But server.js in this repo doesn't export the app (it just calls app.listen).
-// For the sake of the test, let's start the server via child_process, or just trust the manual run.
-// Wait, I can run `node tests/api.test.js` and have it run the server, but it's easier if I just fetch http://localhost:4000.
-// Let's assume the server is running on port 4000 for these integration tests.
-
-const API_BASE = "http://localhost:4000";
+const app = require("../server.js");
+const API_BASE = process.env.API_BASE || app;
 
 let applicantToken = "";
 let officerToken = "";
@@ -85,4 +80,39 @@ test("5. Appeal: allowed once for a Gram Sabha rejection within the window", asy
     .send({ grounds: "I have more proof." });
   
   assert.strictEqual(appeal2Res.status, 400);
+});
+
+test("6. Map-check: officer at claim's stage can save map check (200), wrong-stage officer gets 403", async () => {
+  // Create a claim at Gram Sabha stage
+  const createRes = await request(API_BASE).post("/api/claims").set("Authorization", `Bearer ${applicantToken}`)
+    .field("applicantName", "Map Check Test")
+    .field("village", "Map Village")
+    .field("district", "Map District")
+    .field("state", "Map State")
+    .field("claimType", "IFR");
+  
+  assert.strictEqual(createRes.status, 201);
+  const testClaimId = createRes.body.claim.claimId;
+
+  // Login as SDLC officer (wrong stage for a Gram Sabha claim)
+  const sdlcLogin = await request(API_BASE).post("/api/auth/login").send({ username: "sdlc1", password: "sdlc123" });
+  assert.strictEqual(sdlcLogin.status, 200);
+  const sdlcToken = sdlcLogin.body.token;
+
+  // SDLC officer acting on Gram Sabha claim must be rejected with 403
+  const wrongStageRes = await request(API_BASE)
+    .post(`/api/claims/${testClaimId}/map-check`)
+    .set("Authorization", `Bearer ${sdlcToken}`)
+    .send({ locationChecked: true, observation: "Checked by SDLC" });
+  assert.strictEqual(wrongStageRes.status, 403);
+
+  // Gram Sabha officer acting on Gram Sabha claim must succeed with 200
+  const rightStageRes = await request(API_BASE)
+    .post(`/api/claims/${testClaimId}/map-check`)
+    .set("Authorization", `Bearer ${officerToken}`)
+    .send({ locationChecked: true, observation: "Boundaries verified on map" });
+  assert.strictEqual(rightStageRes.status, 200);
+  assert.strictEqual(rightStageRes.body.success, true);
+  assert.strictEqual(rightStageRes.body.mapCheck.officerConfirmed, true);
+  assert.strictEqual(rightStageRes.body.mapCheck.observation, "Boundaries verified on map");
 });

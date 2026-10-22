@@ -818,7 +818,7 @@ app.post("/api/claims/:id/map-check", requireStageRole, (req, res) => {
   const claimIdx = claims.findIndex((c) => c.claimId === req.params.id);
   if (claimIdx === -1) return res.status(404).json({ error: "Claim not found." });
   
-  const claim = claims[idx];
+  const claim = claims[claimIdx];
   const isChecked = Boolean(locationChecked);
   
   claim.mapCheck = {
@@ -1136,6 +1136,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong on the server." });
 });
 
-app.listen(PORT, () => {
-  console.log(`TribalEarth AI — Module 1 server running on http://localhost:${PORT}`);
-});
+let server = null;
+if (require.main === module) {
+  server = app.listen(PORT, () => {
+    console.log(`TribalEarth AI — Module 1 server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
+module.exports.server = server;
