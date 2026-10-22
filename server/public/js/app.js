@@ -420,9 +420,6 @@ async function openDrawer(claimId) {
     )
     .join("");
 
-  const nextStageMap = { "Gram Sabha": "SDLC", SDLC: "DLC" };
-  const nextStage = nextStageMap[c.currentStage];
-
   // Resolve bilingual values for drawer display
   const bData = c.bilingualData || {};
   const applicantNameBilingual = formatBilingualValue(bData.applicantName, c.applicantName, false, true);
@@ -449,33 +446,7 @@ async function openDrawer(claimId) {
 
     <div class="drawer-section-title">${window.t("drawer.titleAudit", "Audit trail")}</div>
     <ul class="timeline">${timelineHtml}</ul>
-
-    ${
-      nextStage
-        ? `<button class="btn btn-primary drawer-advance-btn" id="advanceBtn" data-next="${nextStage}">${window.t("drawer.advanceBtn", "Forward to {stage}").replace("{stage}", nextStage)}</button>`
-        : `<p style="font-size:12.5px;color:var(--ink-faint);margin-top:10px;">${window.t("drawer.finalStage", "This claim has reached its final stage (DLC).")}</p>`
-    }
   `;
-
-  const advanceBtn = document.getElementById("advanceBtn");
-  if (advanceBtn) {
-    advanceBtn.addEventListener("click", async () => {
-      advanceBtn.disabled = true;
-      advanceBtn.textContent = window.t("drawer.advancing", "Forwarding…");
-      const r = await window.Auth.authFetch(`${API_BASE}/claims/${claimId}/advance`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ actor: "System", note: `Forwarded to ${advanceBtn.dataset.next}.` }),
-      });
-      if (r.ok) {
-        openDrawer(claimId);
-        loadClaims();
-      } else {
-        advanceBtn.disabled = false;
-        advanceBtn.textContent = window.t("drawer.advanceBtn", "Forward to {stage}").replace("{stage}", advanceBtn.dataset.next);
-      }
-    });
-  }
 
   drawerContent.querySelectorAll(".auth-doc-link").forEach(link => {
     link.addEventListener("click", async (e) => {

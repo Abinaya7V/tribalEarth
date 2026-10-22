@@ -620,42 +620,6 @@ app.get("/api/claims/:id/documents/:docId", requireAuth, (req, res) => {
   res.sendFile(normalizedPath);
 });
 
-/**
- * PATCH /api/claims/:id/advance
- * Moves a claim to the next stage in the pipeline and appends an
- * audit trail entry. This keeps the Gram Sabha -> SDLC -> DLC
- * sequence intact — it never skips a stage.
- * body: { note, actor }
- */
-app.patch("/api/claims/:id/advance", (req, res) => {
-  const claims = readClaims();
-  const idx = claims.findIndex((c) => c.claimId === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: "Claim not found." });
-
-  const claim = claims[idx];
-  const currentIdx = STAGES.indexOf(claim.currentStage);
-  if (currentIdx === -1 || currentIdx === STAGES.length - 1) {
-    return res.status(400).json({
-      error: `Claim is already at its final stage (${claim.currentStage}).`,
-    });
-  }
-
-  const nextStage = STAGES[currentIdx + 1];
-  const timestamp = nowISO();
-  claim.currentStage = nextStage;
-  claim.status = "Under Review";
-  claim.updatedAt = timestamp;
-  claim.auditTrail.push({
-    stage: nextStage,
-    action: "Forwarded",
-    actor: req.body.actor || "System",
-    note: req.body.note || `Claim forwarded to ${nextStage}.`,
-    timestamp,
-  });
-
-  writeClaims(claims);
-  res.json({ message: `Claim forwarded to ${nextStage}.`, claim });
-});
 
 // ---------- Module 3: SDLC/DLC Review & Accountability ----------
 

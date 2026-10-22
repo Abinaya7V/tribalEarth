@@ -116,3 +116,34 @@ test("6. Map-check: officer at claim's stage can save map check (200), wrong-sta
   assert.strictEqual(rightStageRes.body.mapCheck.officerConfirmed, true);
   assert.strictEqual(rightStageRes.body.mapCheck.observation, "Boundaries verified on map");
 });
+
+test("7. Regression: PATCH /api/claims/:id/advance is disabled; anonymous and applicant requests must not advance claims", async () => {
+  // Create a claim at Gram Sabha stage
+  const createRes = await request(API_BASE).post("/api/claims").set("Authorization", `Bearer ${applicantToken}`)
+    .field("applicantName", "Advance Test")
+    .field("village", "Advance Village")
+    .field("district", "Advance District")
+    .field("state", "Advance State")
+    .field("claimType", "IFR");
+
+  assert.strictEqual(createRes.status, 201);
+  const testClaimId = createRes.body.claim.claimId;
+
+  // 1. Anonymous request must NOT get 200
+  const anonRes = await request(API_BASE).patch(`/api/claims/${testClaimId}/advance`).send({ actor: "Hacker" });
+  assert.notStrictEqual(anonRes.status, 200, "Anonymous request must not receive 200");
+
+  // 2. Applicant request must NOT get 200
+  const appRes = await request(API_BASE)
+    .patch(`/api/claims/${testClaimId}/advance`)
+    .set("Authorization", `Bearer ${applicantToken}`)
+    .send({ actor: "Applicant" });
+  assert.notStrictEqual(appRes.status, 200, "Applicant request must not receive 200");
+
+  // 3. Confirm claim remains at Gram Sabha stage
+  const getRes = await request(API_BASE)
+    .get(`/api/my/claims/${testClaimId}`)
+    .set("Authorization", `Bearer ${applicantToken}`);
+  assert.strictEqual(getRes.status, 200);
+  assert.strictEqual(getRes.body.claim.currentStage, "Gram Sabha", "Claim must stay at Gram Sabha stage");
+});
