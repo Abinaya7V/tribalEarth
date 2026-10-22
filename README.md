@@ -142,6 +142,8 @@ never plaintext — see `server/services/authService.js`):
 | Username     | Password        | Role         |
 |--------------|-----------------|--------------|
 | `applicant1` | `applicant123`  | Applicant    |
+| `applicant2` | `applicant2123` | Applicant    |
+| `applicant3` | `applicant3123` | Applicant    |
 | `gramsabha1` | `gramsabha123`  | Gram Sabha   |
 | `sdlc1`      | `sdlc123`       | SDLC         |
 | `dlc1`       | `dlc123`        | DLC          |
@@ -261,3 +263,15 @@ The platform now enforces strict privacy:
 | PATCH  | `/api/my/claims/:id/location`                 | Applicant role                          |
 | GET    | `/api/claims/:id/geo`                         | Applicant (owner) or assigned Officer   |
 | POST   | `/api/claims/:id/map-check`                   | Officer role matching claim's stage     |
+
+## Overclaim & Competing Claim Resolution Workflow
+
+### Overview
+TribalEarth AI includes automated boundary overlap and duplicate document detection to handle competing claims transparently while ensuring AI never decides a claim:
+- **Spatial Overlap Detection:** Uses Turf.js to identify polygon-polygon intersection, point-point proximity (<50m), and point-in-polygon overlaps across non-rejected claims.
+- **Duplicate Document Proof:** Computes synchronous SHA-256 digests on file uploads to flag identical supporting documents.
+- **Symmetric Conflict Links:** When Claim A conflicts with Claim B, both claims store bidirectional conflict records (`kind: "competing"` or `"duplicate"`).
+- **Human Resolution Lock:** Claims with open competing conflicts cannot be approved (HTTP 409 `CONFLICT_UNRESOLVED`). A human review officer at the claim's stage must select a statutory finding and enter a written justification (>=10 chars) to resolve the conflict and unlock approval.
+- **Privacy Enforcement:** Applicants never see other claimants, competing claim IDs, or specific overlap flags; only a neutral advisory notice is provided.
+- **Step-by-Step Demo:** See [`DEMO_OVERCLAIM.md`](./DEMO_OVERCLAIM.md) for full walkthrough instructions.
+

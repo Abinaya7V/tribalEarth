@@ -68,6 +68,25 @@
     dlc: "DLC Officer",
   };
 
+  function updateTabNumbers() {
+    const allTabBtns = Array.from(document.querySelectorAll(".tab-nav .tab-btn"));
+    let counter = 1;
+    allTabBtns.forEach((btn) => {
+      const isVisible = btn.style.display !== "none" && !btn.hidden;
+      const indexSpan = btn.querySelector(".tab-index");
+      if (isVisible) {
+        if (indexSpan) {
+          indexSpan.textContent = String(counter).padStart(2, "0");
+        }
+        counter++;
+      } else {
+        if (indexSpan) {
+          indexSpan.textContent = "";
+        }
+      }
+    });
+  }
+
   function renderHeader() {
     const label = document.getElementById("sessionLabel");
     const loginBtn = document.getElementById("loginBtn");
@@ -80,7 +99,13 @@
 
     if (session) {
       label.hidden = false;
-      label.textContent = `${session.displayName} · ${ROLE_LABELS[session.role] || session.role}`;
+      const roleLabel = ROLE_LABELS[session.role] || session.role;
+      // Show role label and display name only when they differ; otherwise show once
+      if (session.displayName && session.displayName.trim().toLowerCase() !== roleLabel.trim().toLowerCase()) {
+        label.textContent = `${session.displayName} · ${roleLabel}`;
+      } else {
+        label.textContent = roleLabel;
+      }
       loginBtn.hidden = true;
       logoutBtn.hidden = false;
       
@@ -126,34 +151,79 @@
     const tabRegister = document.querySelector('.tab-btn[data-tab="register"]');
     const tabOfficials = document.querySelector('.tab-btn[data-tab="officials"]');
     const tabMyClaims = document.querySelector('.tab-btn[data-tab="myclaims"]');
+    const tabAtlas = document.querySelector('.tab-btn[data-tab="atlas"]');
+
+    const panelFile = document.getElementById("tab-file");
+    const panelRegister = document.getElementById("tab-register");
+    const panelOfficials = document.getElementById("tab-officials");
+    const panelMyClaims = document.getElementById("tab-myclaims");
+    const panelAtlas = document.getElementById("tab-atlas");
     
     if (!tabFile || !tabRegister || !tabOfficials) return;
 
     if (!role || role === 'applicant') {
+      // Applicant sees: File a Claim, Claims Register, My Claims
       tabFile.style.display = '';
+      tabFile.hidden = false;
+      tabRegister.style.display = '';
+      tabRegister.hidden = false;
       if (tabMyClaims) {
         tabMyClaims.style.display = '';
         tabMyClaims.hidden = false;
       }
-      tabRegister.style.display = 'none';
       tabOfficials.style.display = 'none';
+      tabOfficials.hidden = true;
+      if (tabAtlas) {
+        tabAtlas.style.display = 'none';
+        tabAtlas.hidden = true;
+      }
+
+      // Hide officer panels completely
+      if (panelOfficials) panelOfficials.hidden = true;
+      if (panelAtlas) panelAtlas.hidden = true;
+      if (panelFile) panelFile.hidden = false;
+      if (panelRegister) panelRegister.hidden = false;
+      if (panelMyClaims) panelMyClaims.hidden = false;
     } else {
-      // Officer roles (gram_sabha, sdlc, dlc)
+      // Officer roles (gram_sabha, sdlc, dlc): Officials Review, Atlas ONLY
+      // Claims Register, File a Claim, and My Claims must NOT be visible to officers
       tabFile.style.display = 'none';
+      tabFile.hidden = true;
+      tabRegister.style.display = 'none';
+      tabRegister.hidden = true;
       if (tabMyClaims) {
         tabMyClaims.style.display = 'none';
         tabMyClaims.hidden = true;
       }
-      tabRegister.style.display = '';
       tabOfficials.style.display = '';
+      tabOfficials.hidden = false;
+      if (tabAtlas) {
+        tabAtlas.style.display = '';
+        tabAtlas.hidden = false;
+      }
+
+      // Hide applicant panels completely
+      if (panelFile) panelFile.hidden = true;
+      if (panelRegister) panelRegister.hidden = true;
+      if (panelMyClaims) panelMyClaims.hidden = true;
+      if (panelOfficials) panelOfficials.hidden = false;
+      if (panelAtlas) panelAtlas.hidden = false;
     }
 
-    // Fallback to activate first visible tab if active tab becomes hidden
+    // Dynamic numbering of visible tabs (01, 02, ...)
+    updateTabNumbers();
+
+    // Default tab selection per role:
+    // Officers -> Officials Review
+    // Applicants -> File a Claim (first visible tab)
     const activeTabBtn = document.querySelector('.tab-btn.is-active');
-    if (activeTabBtn && activeTabBtn.style.display === 'none') {
-      const visibleTabs = [tabFile, tabMyClaims, tabRegister, tabOfficials].filter(t => t && t.style.display !== 'none');
-      if (visibleTabs.length > 0) {
-        visibleTabs[0].click();
+    const isOfficer = role && ['gram_sabha', 'sdlc', 'dlc'].includes(role);
+    const targetDefaultTab = isOfficer ? tabOfficials : tabFile;
+
+    const isCurrentActiveForbidden = !activeTabBtn || activeTabBtn.style.display === 'none' || activeTabBtn.hidden;
+    if (isCurrentActiveForbidden || (isOfficer && activeTabBtn.dataset.tab !== 'officials' && activeTabBtn.dataset.tab !== 'atlas')) {
+      if (targetDefaultTab) {
+        targetDefaultTab.click();
       }
     }
   }

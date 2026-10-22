@@ -18,12 +18,18 @@ tabBtns.forEach((btn) => {
     btn.classList.add("is-active");
     btn.setAttribute("aria-selected", "true");
 
+    const isOfficer = window.Auth && window.Auth.hasRole("gram_sabha", "sdlc", "dlc");
+    if (btn.style.display === "none" || btn.hidden) return;
+    if (isOfficer && (target === "file" || target === "register" || target === "myclaims")) return;
+
     const target = btn.dataset.tab;
     tabPanels.forEach((p) => p.classList.remove("is-active"));
-    document.getElementById(`tab-${target}`).classList.add("is-active");
+    const activePanel = document.getElementById(`tab-${target}`);
+    if (activePanel) activePanel.classList.add("is-active");
 
-    if (target === "register") loadClaims();
+    if (target === "register" && !isOfficer) loadClaims();
     if (target === "myclaims" && typeof window.loadMyClaims === "function") window.loadMyClaims();
+    if (target === "atlas" && window.Atlas && typeof window.Atlas.onTabActive === "function") window.Atlas.onTabActive();
   });
 });
 
@@ -186,6 +192,7 @@ function buildReview() {
     [window.t("form.review.state", "State"), formatBilingualValue(null, `${fd.get("state")} ${fd.get("stateCode") ? "(" + fd.get("stateCode").toUpperCase() + ")" : ""}`)],
     [window.t("form.review.claimType", "Claim type"), formattedClaimType],
     [window.t("form.review.cultivationYears", "Years of cultivation"), fd.get("yearsOfCultivation") || "—"],
+    [window.t("atlas.occupationSince", "Occupation since"), fd.get("occupationSinceYear") || "—"],
     [window.t("form.review.location", "Location"), fd.get("latitude") && fd.get("longitude") ? `${fd.get("latitude")}, ${fd.get("longitude")}` : window.t("form.review.locationNotProvided", "Not provided")],
     [window.t("form.review.docsAttached", "Documents attached"), `${selectedFiles.length} file(s)`],
   ];
@@ -208,6 +215,22 @@ claimForm.addEventListener("submit", async (e) => {
     formMsg.className = "form-msg";
     formMsg.textContent = window.t("form.status.loginRequired", "Please log in as an applicant to file a claim.");
     if (window.Auth) window.Auth.openLoginModal();
+    return;
+  }
+
+  // Mandatory location validation: require coordinates or boundary polygon
+  const lat = (document.getElementById("latitude")?.value || "").trim();
+  const lng = (document.getElementById("longitude")?.value || "").trim();
+  const geom = (document.getElementById("geometry")?.value || "").trim();
+
+  if ((!lat || !lng) && !geom) {
+    formMsg.className = "form-msg";
+    formMsg.textContent = window.t(
+      "filing.locationRequired",
+      "Location is mandatory: please drop a pin or draw a boundary on the map."
+    );
+    currentStep = 2;
+    renderStep();
     return;
   }
 
@@ -247,7 +270,11 @@ claimForm.addEventListener("submit", async (e) => {
     if (!res.ok) throw new Error(data.error || "Submission failed.");
 
     formMsg.classList.add("is-success");
-    formMsg.textContent = window.t("form.status.success", "Filed successfully — Claim ID {id}").replace("{id}", data.claim.claimId);
+    let successMsg = window.t("form.status.success", "Filed successfully — Claim ID {id}").replace("{id}", data.claim.claimId);
+    if (data.claim?.conflictNotice) {
+      successMsg += ` · ${window.t("conflict.applicantNotice", "Your claim is currently undergoing standard boundary and document verification by officials.")}`;
+    }
+    formMsg.textContent = successMsg;
     claimForm.reset();
     selectedFiles = [];
     renderFileList();

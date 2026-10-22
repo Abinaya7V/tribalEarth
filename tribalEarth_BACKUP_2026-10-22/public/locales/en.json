@@ -1,0 +1,341 @@
+{
+  "header": {
+    "title": "TribalEarth AI",
+    "sub": "Forest Rights Claim Register",
+    "nav": {
+      "file": "File a Claim",
+      "register": "Claims Register",
+      "myclaims": "My Claims"
+    }
+  },
+  "stepper": {
+    "step1": {
+      "title": "Applicant & Village",
+      "desc": "Who is filing, and where"
+    },
+    "step2": {
+      "title": "Land & Claim Type",
+      "desc": "IFR, CR, or CFR details"
+    },
+    "step3": {
+      "title": "Supporting Documents",
+      "desc": "Evidence of occupation"
+    },
+    "step4": {
+      "title": "Review & Submit",
+      "desc": "Confirm before filing"
+    },
+    "note": "Every claim is recorded the moment it is filed at Gram Sabha level — nothing here overrides the Gram Sabha's decision."
+  },
+  "form": {
+    "step1": {
+      "legend": "Applicant & Village Details",
+      "applicant": "Applicant's full name",
+      "guardian": "Father's / Husband's name",
+      "village": "Village",
+      "gp": "Gram Panchayat",
+      "district": "District",
+      "state": "State",
+      "stateCode": "State code",
+      "stateCodeHint": "(2 letters, for claim ID)",
+      "applicantPlaceholder": "e.g. Ramesh Netam",
+      "guardianPlaceholder": "e.g. Sukhram Netam",
+      "villagePlaceholder": "e.g. Kanker",
+      "gpPlaceholder": "e.g. Kanker GP",
+      "districtPlaceholder": "e.g. Kanker",
+      "statePlaceholder": "e.g. Chhattisgarh",
+      "stateCodePlaceholder": "e.g. CG"
+    },
+    "step2": {
+      "legend": "Land & Claim Type",
+      "ifrTitle": "Individual Forest Right",
+      "ifrDesc": "Right to live & cultivate forest land for livelihood",
+      "crTitle": "Community Right",
+      "crDesc": "Shared community access & use rights",
+      "cfrTitle": "Community Forest Resource",
+      "cfrDesc": "Collective right to protect, manage & govern forest",
+      "landDesc": "Description of land / boundary",
+      "cultivationYears": "Years of cultivation / occupation",
+      "lat": "Latitude",
+      "lng": "Longitude",
+      "optional": "(optional)",
+      "landDescPlaceholder": "e.g. Plot east of Kanker stream, bordered by sal forest to the north",
+      "cultivationYearsPlaceholder": "e.g. 12",
+      "latPlaceholder": "e.g. 20.2734",
+      "lngPlaceholder": "e.g. 81.4930"
+    },
+    "step3": {
+      "legend": "Supporting Documents",
+      "help": "Photos of residence proof, cultivation evidence, or any existing record. Up to 6 files, 8MB each.",
+      "dropzone": "Tap to add photos",
+      "dropzoneOr": "or drag files here"
+    },
+    "step4": {
+      "legend": "Review & Submit",
+      "help": "Please confirm the details below with the applicant before filing at Gram Sabha."
+    },
+    "buttons": {
+      "back": "Back",
+      "continue": "Continue",
+      "submit": "File Claim at Gram Sabha"
+    },
+    "review": {
+      "applicant": "Applicant",
+      "guardian": "Father's / Husband's name",
+      "village": "Village",
+      "gp": "Gram Panchayat",
+      "district": "District",
+      "state": "State",
+      "claimType": "Claim type",
+      "cultivationYears": "Years of cultivation",
+      "location": "Location",
+      "locationNotProvided": "Not provided",
+      "docsAttached": "Documents attached",
+      "landDesc": "Land description"
+    },
+    "validation": {
+      "required": "Please fill in \"{field}\".",
+      "type": "Please select a claim type — IFR, CR, or CFR."
+    },
+    "status": {
+      "filing": "Filing…",
+      "success": "Filed successfully — Claim ID {id}",
+      "loginRequired": "Please log in as an applicant to file a claim."
+    }
+  },
+  "register": {
+    "search": "Search by name, village, or claim ID…",
+    "filterTypeAll": "All claim types",
+    "filterStageAll": "All stages",
+    "refresh": "Refresh",
+    "loading": "Loading claims…",
+    "loadError": "Could not load claims — is the server running?",
+    "empty": "No claims filed yet — file one from the \"File a Claim\" tab.",
+    "table": {
+      "id": "Claim ID",
+      "applicant": "Applicant",
+      "village": "Village",
+      "type": "Type",
+      "stage": "Stage",
+      "date": "Filed on"
+    },
+    "stats": {
+      "total": "Total claims",
+      "gramSabha": "At Gram Sabha",
+      "sdlc": "At SDLC",
+      "dlc": "At DLC",
+      "cfr": "CFR claims"
+    }
+  },
+  "drawer": {
+    "close": "Close",
+    "loading": "Loading…",
+    "titleDetails": "Claim details",
+    "titleDocs": "Supporting documents",
+    "titleAudit": "Audit trail",
+    "labelType": "Type",
+    "labelStage": "Current stage",
+    "labelYears": "Cultivation years",
+    "labelLocation": "Location",
+    "locationNotProvided": "Not provided",
+    "noDocs": "No documents attached",
+    "finalStage": "This claim has reached its final stage (DLC).",
+    "advanceBtn": "Forward to {stage}",
+    "advancing": "Forwarding…",
+    "timeline": {
+      "submitted": "Claim submitted",
+      "submittedNote": "Claim filed and recorded at Gram Sabha level.",
+      "forwarded": "Forwarded",
+      "forwardedNote": "Claim forwarded to {stage}."
+    }
+  },
+  "onboarding": {
+    "title": "Welcome to TribalEarth AI",
+    "desc": "Select your language to access the Forest Rights Act (FRA) claim management platform.",
+    "start": "Get Started"
+  },
+  "voice": {
+    "fillUsingVoice": "Fill Using Voice",
+    "micLabel": "Speak this field",
+    "listenLabel": "Listen",
+    "state": {
+      "ready": "Tap the mic and speak",
+      "listening": "Listening…",
+      "processing": "Processing…",
+      "success": "Got it",
+      "error": "Something went wrong. Please try again or type instead.",
+      "noSpeech": "We didn't catch that — please try again.",
+      "micDenied": "Microphone access was denied. Please allow microphone access, or type instead.",
+      "unsupportedLanguage": "Voice input isn't available for this language yet — please type instead.",
+      "serviceUnavailable": "Voice service is not configured — please type instead.",
+      "speaking": "Speaking…"
+    },
+    "guided": {
+      "title": "Fill Using Voice",
+      "intro": "We'll ask for a few details, one at a time. Speak clearly after each question.",
+      "askApplicant": "Please tell us the applicant's name.",
+      "askGuardian": "Now tell us the father's or husband's name.",
+      "askVillage": "What is the village?",
+      "askGramPanchayat": "What is the Gram Panchayat?",
+      "askDistrict": "What is the district?",
+      "askState": "What is the state?",
+      "askClaimType": "Is this an Individual Forest Right, a Community Right, or a Community Forest Resource claim?",
+      "askLandDescription": "Please describe the land or its boundary.",
+      "askCultivationYears": "For how many years have you cultivated this land?",
+      "done": "That's everything — please review what we understood below.",
+      "understood": "We understood:",
+      "applyToForm": "Apply to Form",
+      "editFirst": "Edit First",
+      "keepCurrent": "Keep Current",
+      "replace": "Replace",
+      "current": "Current",
+      "detected": "Detected",
+      "cancel": "Cancel",
+      "skip": "Skip this question",
+      "allSet": "All set — your answers are already filled in."
+    }
+  },
+  "myclaims": {
+    "title": "My Claims",
+    "subtitle": "Track the status of your submitted claims",
+    "loading": "Loading your claims…",
+    "empty": "No claims found.",
+    "village": "Village",
+    "stage": "Current stage",
+    "status": "Status",
+    "statusSubmitted": "Submitted",
+    "statusUnderReview": "Under Review",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "statusEscalated": "Escalated to DLC",
+    "statusAppealed": "Appealed",
+    "descSubmitted": "Your claim has been submitted to the Gram Sabha and is awaiting verification.",
+    "descUnderReview": "Your claim is currently under review at this stage.",
+    "descApproved": "Your claim has been approved and forest rights have been granted.",
+    "descRejected": "Your claim was rejected at this stage.",
+    "descEscalated": "Your claim has been forwarded to the District Level Committee (DLC) for final determination.",
+    "descAppealed": "Your appeal has been filed and is currently being considered by the SDLC.",
+    "stageGramSabha": "Gram Sabha",
+    "stageSdlc": "SDLC",
+    "stageDlc": "DLC",
+    "progressTitle": "Review Progress",
+    "statusTitle": "Current Status",
+    "rejectedBy": "Rejected by",
+    "readAloud": "Read Aloud",
+    "priorRejectionTitle": "Prior SDLC Rejection Note",
+    "appealEligible": "Eligible to Appeal",
+    "appealNotice": "You have the right to appeal a Gram Sabha rejection to the SDLC within 60 days.",
+    "appealDeadline": "Appeal Deadline",
+    "fileAppealBtn": "File Appeal",
+    "appealFiledTitle": "Appeal Filed",
+    "appealGrounds": "Grounds",
+    "filedOn": "Filed on",
+    "claimDetails": "Claim Details",
+    "supportingDocs": "Supporting Documents",
+    "noDocs": "No documents attached",
+    "auditTrail": "Audit Trail",
+    "claimType": "Type",
+    "cultivationYears": "Years of cultivation",
+    "location": "Location",
+    "locationNotProvided": "Not provided",
+    "errorLoading": "Error loading claims.",
+    "errorLoadingDetail": "Failed to load claim details."
+  },
+  "appeal": {
+    "title": "File an Appeal",
+    "subtitle": "You have the right to appeal a Gram Sabha rejection to the SDLC within 60 days.",
+    "groundsLabel": "Grounds for Appeal",
+    "groundsPlaceholder": "Explain why the claim should not have been rejected...",
+    "submitBtn": "Submit Appeal"
+  },
+  "conflict": {
+    "banner": {
+      "title": "Competing Claim(s) Detected",
+      "competing": "This claim has open competing conflicts. Approval is locked until all conflicts are resolved.",
+      "duplicate": "Possible Duplicate Claim (Same Applicant)"
+    },
+    "badge": "conflict(s)",
+    "duplicate": {
+      "label": "Duplicate proof",
+      "desc": "Another claim by this applicant shares boundaries or proof documents. Advisory only — does not block approval."
+    },
+    "resolve": {
+      "finding": {
+        "title": "Determination finding",
+        "boundaries_do_not_conflict": "Boundaries do not conflict",
+        "shared_use_accepted": "Shared use accepted",
+        "this_claim_has_stronger_evidence": "This claim has stronger evidence"
+      },
+      "reason": "Written reason (min 10 characters)",
+      "reasonPlaceholder": "Enter justification for this resolution...",
+      "submit": "Resolve Conflict",
+      "resolvedHeader": "Resolved Conflicts"
+    },
+    "approve": {
+      "blocked": "All competing claim conflicts must be resolved before this claim can be approved."
+    },
+    "applicantNoticeTitle": "Verification in Progress",
+    "applicantNotice": "Your claim is currently undergoing standard boundary and document verification by officials.",
+    "notCheckable": "Not checkable (no coordinates)",
+    "reasons": {
+      "overlap": "Spatial Overlap",
+      "duplicateProof": "Duplicate Proof"
+    }
+  },
+  "filing": {
+    "locationRequired": "Location is mandatory: please drop a pin or draw a boundary on the map.",
+    "occupationSinceYear": "Occupation since (Year)",
+    "occupationSinceYearHint": "e.g. 1998 (between 1900 and current year)",
+    "occupationSinceYearPlaceholder": "e.g. 1998"
+  },
+  "atlas": {
+    "tab": "Atlas",
+    "filterVillage": "All villages",
+    "filterStatus": "All statuses",
+    "filterClaimType": "All claim types",
+    "filterDisputed": "Disputed only",
+    "refresh": "Refresh",
+    "lastUpdated": "Last updated",
+    "notMappedCount": "{count} claims not mapped (no coordinates)",
+    "truncated": "Showing first {count} of {total}, zoom in to see more",
+    "newBadge": "New",
+    "newToast": "{count} new claim(s) added",
+    "flyTo": "View",
+    "claimedBoundaryNote": "Boundaries are claimed by applicants and not surveyed; 'verified' means an officer checked the location on the map.",
+    "verifiedOnMap": "Verified on map by {officer} on {date}",
+    "claimedBoundary": "Claimed boundary (unverified)",
+    "occupationSince": "Occupation since",
+    "grantedOn": "Granted on",
+    "recentActivity": "Recent Activity",
+    "proofs": "Proofs",
+    "checklist": "Rule 13 Checklist Summary",
+    "openFullReview": "Open full review",
+    "loading": "Loading Atlas data…",
+    "loadingDetail": "Loading claim details…",
+    "loadError": "Could not load Atlas data.",
+    "loadDetailError": "Could not load claim details.",
+    "noProofAvailable": "No proof documents attached.",
+    "unclassified": "Unclassified",
+    "status": {
+      "submitted": "Submitted",
+      "underReview": "Under Review",
+      "escalated": "Escalated to DLC",
+      "appealed": "Appealed",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "disputed": "Disputed"
+    },
+    "legend": {
+      "title": "Legend",
+      "submitted": "Submitted / Under Review",
+      "escalated": "Escalated to DLC",
+      "appealed": "Appealed",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "conflict": "Open Conflict (Disputed)"
+    },
+    "noMatch": "No claims match these filters",
+    "clearFilters": "Clear filters",
+    "unfilteredCount": "{count} claims exist without these filters"
+  }
+}

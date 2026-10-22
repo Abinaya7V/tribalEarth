@@ -111,15 +111,30 @@
     }
     ledgerBody.innerHTML = claims
       .map(
-        (c) => `
+        (c) => {
+          let badges = '';
+          if (c.priorRejection) badges += '<span class="escalated-badge">Escalated</span>';
+          if (c.appeal) badges += '<span class="escalated-badge">Appealed</span>';
+          if (c.conflictCount > 0) {
+            badges += `<span class="conflict-badge conflict-competing">${c.conflictCount} ${c.conflictCount === 1 ? 'conflict' : 'conflicts'}</span>`;
+          }
+          if (c.hasDuplicateProof) {
+            badges += '<span class="conflict-badge conflict-duplicate">Duplicate proof</span>';
+          }
+          if (c.notCheckable) {
+            badges += '<span class="conflict-badge conflict-not-checkable">Not checkable</span>';
+          }
+
+          return `
       <tr data-claim-id="${c.claimId}">
-        <td><span class="claim-id-chip">${c.claimId}</span>${c.priorRejection ? '<span class="escalated-badge">Escalated</span>' : ""}${c.appeal ? '<span class="escalated-badge">Appealed</span>' : ""}</td>
+        <td><span class="claim-id-chip">${c.claimId}</span>${badges}</td>
         <td>${c.applicantName}</td>
         <td>${c.village}</td>
         <td><span class="type-badge type-${c.claimType}">${c.claimType}</span></td>
         <td>${c.daysPending}</td>
         <td>${c.slaExceeded ? '<span class="sla-badge sla-overdue">Overdue</span>' : '<span class="sla-badge">On track</span>'}</td>
-      </tr>`
+      </tr>`;
+        }
       )
       .join("");
 
@@ -178,6 +193,111 @@
       </div>`
       : "";
 
+    const conflicts = Array.isArray(claim.conflicts) ? claim.conflicts : [];
+    const openCompeting = conflicts.filter((c) => c.kind === "competing" && c.status === "open");
+    const duplicateConflicts = conflicts.filter((c) => c.kind === "duplicate");
+    const resolvedConflicts = conflicts.filter((c) => c.status === "resolved");
+    const notCheckable = !claim.geometry && !claim.location;
+
+    let conflictBannerHtml = "";
+    if (openCompeting.length > 0) {
+      conflictBannerHtml += `
+        <div class="conflict-banner conflict-banner-competing">
+          <div class="conflict-banner-header">
+            <span class="conflict-banner-icon">⚠️</span>
+            <div>
+              <h4 class="conflict-banner-title">${window.t("conflict.banner.title", "Competing Claim(s) Detected")}</h4>
+              <p class="conflict-banner-desc">${window.t("conflict.banner.competing", "This claim has open competing conflicts. Approval is locked until all conflicts are resolved.")}</p>
+            </div>
+          </div>
+          <div class="conflict-items-list">
+            ${openCompeting
+              .map(
+                (c) => `
+              <div class="conflict-item-card" data-conflict-id="${c.conflictId}">
+                <div class="conflict-item-meta">
+                  <span class="claim-id-chip">${c.otherClaimId}</span>
+                  <span class="type-badge">${c.otherClaimStage || "Active"}</span>
+                  ${
+                    c.otherApplicantName
+                      ? `<span class="conflict-claimant-info">${c.otherApplicantName} (${c.otherVillage || ""})</span>`
+                      : '<span class="conflict-claimant-info"><em>Anonymized claimant</em></span>'
+                  }
+                  <div class="conflict-reasons-wrap">
+                    ${(c.reasons || [])
+                      .map((r) =>
+                        r === "SPATIAL_OVERLAP"
+                          ? `<span class="reason-pill">${window.t("conflict.reasons.overlap", "Spatial Overlap")}</span>`
+                          : `<span class="reason-pill">${window.t("conflict.reasons.duplicateProof", "Duplicate Proof")}</span>`
+                      )
+                      .join(" ")}
+                  </div>
+                </div>
+                <form class="conflict-resolve-form" data-conflict-id="${c.conflictId}">
+                  <div class="field" style="margin-bottom:8px;">
+                    <label style="font-size:12px; font-weight:600; color:var(--ink-soft);">${window.t("conflict.resolve.finding.title", "Determination finding")}</label>
+                    <select class="conflict-finding-select" style="width:100%; padding:6px; font-size:13px; border-radius:4px; border:1px solid #d1d5db;" required>
+                      <option value="boundaries_do_not_conflict">${window.t("conflict.resolve.finding.boundaries_do_not_conflict", "Boundaries do not conflict")}</option>
+                      <option value="shared_use_accepted">${window.t("conflict.resolve.finding.shared_use_accepted", "Shared use accepted")}</option>
+                      <option value="this_claim_has_stronger_evidence">${window.t("conflict.resolve.finding.this_claim_has_stronger_evidence", "This claim has stronger evidence")}</option>
+                    </select>
+                  </div>
+                  <div class="field" style="margin-bottom:8px;">
+                    <label style="font-size:12px; font-weight:600; color:var(--ink-soft);">${window.t("conflict.resolve.reason", "Written reason (min 10 characters)")}</label>
+                    <textarea class="conflict-reason-input" rows="2" placeholder="${window.t("conflict.resolve.reasonPlaceholder", "Enter justification for this resolution...")}" style="width:100%; padding:6px; font-size:13px; border-radius:4px; border:1px solid #d1d5db;" required></textarea>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <button type="submit" class="btn btn-primary btn-sm conflict-resolve-btn" disabled>${window.t("conflict.resolve.submit", "Resolve Conflict")}</button>
+                    <span class="conflict-status-msg" style="font-size:12px;"></span>
+                  </div>
+                </form>
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    if (duplicateConflicts.length > 0) {
+      conflictBannerHtml += `
+        <div class="conflict-banner conflict-banner-duplicate">
+          <div class="conflict-banner-header">
+            <span class="conflict-banner-icon">ℹ️</span>
+            <div>
+              <h4 class="conflict-banner-title">${window.t("conflict.banner.duplicate", "Possible Duplicate Claim (Same Applicant)")}</h4>
+              <p class="conflict-banner-desc">${window.t("conflict.duplicate.desc", "Another claim by this applicant shares boundaries or proof documents. Advisory only — does not block approval.")}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    if (resolvedConflicts.length > 0) {
+      conflictBannerHtml += `
+        <div class="conflict-resolved-box">
+          <h5 style="margin:0 0 6px; font-size:13px; color:var(--forest);">${window.t("conflict.resolve.resolvedHeader", "Resolved Conflicts")}</h5>
+          <ul style="margin:0; padding-left:18px; font-size:12.5px; color:var(--ink-soft);">
+            ${resolvedConflicts
+              .map(
+                (c) =>
+                  `<li><strong>${c.otherClaimId}</strong>: ${c.resolution?.finding || "resolved"} — &ldquo;${c.resolution?.reason || ""}&rdquo; (${c.resolution?.resolvedBy || "Officer"})</li>`
+              )
+              .join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+    if (notCheckable) {
+      conflictBannerHtml += `
+        <div class="conflict-banner conflict-banner-not-checkable" style="margin-bottom:16px; padding:10px 14px; background:#f3f4f6; border-left:4px solid #9ca3af; border-radius:4px; font-size:13px; color:#4b5563;">
+          ℹ️ <strong>${window.t("conflict.notCheckable", "Not checkable (no coordinates)")}</strong> — Legacy claim has no coordinates. Spatial overlap cannot be determined.
+        </div>
+      `;
+    }
+
     const docsHtml = claim.documents.length
       ? claim.documents.map((doc, idx) => renderDocumentCard(doc, idx)).join("")
       : "<p>No documents attached to this claim.</p>";
@@ -196,6 +316,7 @@
 
       ${priorRejectionHtml}
       ${appealHtml}
+      ${conflictBannerHtml}
 
       <div class="drawer-section-title">Documents &amp; AI-assisted classification</div>
       <p class="officials-drawer-note">Suggestions only — tick "Confirm" to have a document count toward the Rule 13 checklist.</p>
@@ -256,7 +377,9 @@
     });
 
     wireDocumentActions(claim.claimId);
-    wireDecisionActions(claim.claimId);
+    wireDecisionActions(claim.claimId, openCompeting.length > 0);
+    wireConflictActions(claim.claimId);
+
     if (geoData && (geoData.location || geoData.geometry)) {
       wireOfficialsMap(claim.claimId, geoData, claim.mapCheck);
     } else {
@@ -301,13 +424,24 @@
     if (geo.nearby && geo.nearby.length > 0) {
       const markers = L.featureGroup().addTo(map);
       geo.nearby.forEach(other => {
-        const color = other.anonymized ? '#888' : '#e11d48';
-        const label = other.anonymized ? 'Anonymized Claim' : `Claim: ${other.claimId}`;
+        let color = other.anonymized ? '#888' : '#e11d48';
+        let weight = 1;
+        let dashArray = null;
+        if (other.conflict) {
+          color = '#dc2626';
+          weight = 4;
+          dashArray = '6, 6';
+        }
+        const label = other.conflict
+          ? `⚠️ Conflicting Claim: ${other.claimId}`
+          : other.anonymized
+          ? 'Nearby Claim (Anonymized)'
+          : `Claim: ${other.claimId}`;
         
         if (other.geometry) {
-          L.geoJSON(other.geometry, { style: { color, weight: 1, fillOpacity: 0.1 } }).bindPopup(label).addTo(markers);
+          L.geoJSON(other.geometry, { style: { color, weight, dashArray, fillOpacity: other.conflict ? 0.3 : 0.1 } }).bindPopup(label).addTo(markers);
         } else if (other.location) {
-          L.circleMarker([other.location.lat, other.location.lng], { radius: 6, color, fillOpacity: 0.5 }).bindPopup(label).addTo(markers);
+          L.circleMarker([other.location.lat, other.location.lng], { radius: other.conflict ? 8 : 6, color, weight, dashArray, fillOpacity: 0.6 }).bindPopup(label).addTo(markers);
         }
       });
       if (!claimLayer) map.fitBounds(markers.getBounds());
@@ -465,7 +599,7 @@
     });
   }
 
-  function wireDecisionActions(claimId) {
+  function wireDecisionActions(claimId, hasOpenCompetingConflict = false) {
     const approveBtn = document.getElementById("approveBtn");
     const rejectToggleBtn = document.getElementById("rejectToggleBtn");
     const rejectPanel = document.getElementById("rejectPanel");
@@ -473,6 +607,16 @@
     const confirmRejectBtn = document.getElementById("confirmRejectBtn");
     const cancelRejectBtn = document.getElementById("cancelRejectBtn");
     const decisionMsg = document.getElementById("decisionMsg");
+
+    if (hasOpenCompetingConflict && approveBtn) {
+      approveBtn.disabled = true;
+      approveBtn.title = window.t(
+        "conflict.approve.blocked",
+        "All competing claim conflicts must be resolved before this claim can be approved."
+      );
+      approveBtn.style.opacity = "0.5";
+      approveBtn.style.cursor = "not-allowed";
+    }
 
     async function submitDecision(payload, busyBtn) {
       busyBtn.disabled = true;
@@ -494,7 +638,9 @@
       }
     }
 
-    approveBtn.addEventListener("click", () => submitDecision({ action: "approve" }, approveBtn));
+    if (approveBtn && !hasOpenCompetingConflict) {
+      approveBtn.addEventListener("click", () => submitDecision({ action: "approve" }, approveBtn));
+    }
 
     rejectToggleBtn.addEventListener("click", () => {
       rejectPanel.hidden = !rejectPanel.hidden;
@@ -505,13 +651,70 @@
       confirmRejectBtn.disabled = true;
     });
     justificationInput.addEventListener("input", () => {
-      // Mirrors the server's own rule (>=10 chars) — purely for UX;
-      // the server enforces this independently regardless of what
-      // the client does.
       confirmRejectBtn.disabled = justificationInput.value.trim().length < 10;
     });
     confirmRejectBtn.addEventListener("click", () =>
       submitDecision({ action: "reject", justification: justificationInput.value.trim() }, confirmRejectBtn)
     );
   }
+
+  function wireConflictActions(claimId) {
+    drawerContent.querySelectorAll(".conflict-resolve-form").forEach((form) => {
+      const conflictId = form.dataset.conflictId;
+      const select = form.querySelector(".conflict-finding-select");
+      const textarea = form.querySelector(".conflict-reason-input");
+      const submitBtn = form.querySelector(".conflict-resolve-btn");
+      const statusMsg = form.querySelector(".conflict-status-msg");
+
+      if (!textarea || !submitBtn) return;
+
+      textarea.addEventListener("input", () => {
+        submitBtn.disabled = textarea.value.trim().length < 10;
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const finding = select.value;
+        const reason = textarea.value.trim();
+        if (reason.length < 10) return;
+
+        submitBtn.disabled = true;
+        statusMsg.textContent = "Resolving...";
+        statusMsg.style.color = "var(--ink-soft)";
+
+        try {
+          const res = await window.Auth.authFetch(`${API_BASE}/claims/${claimId}/conflicts/${conflictId}/resolve`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ finding, reason }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            statusMsg.textContent = data.error || "Failed to resolve conflict.";
+            statusMsg.style.color = "var(--clay)";
+            submitBtn.disabled = false;
+            return;
+          }
+
+          statusMsg.textContent = "Resolved!";
+          statusMsg.style.color = "var(--forest)";
+          setTimeout(async () => {
+            await renderClaimReview(claimId);
+            loadQueue();
+          }, 700);
+        } catch (err) {
+          statusMsg.textContent = "Network error";
+          statusMsg.style.color = "var(--clay)";
+          submitBtn.disabled = false;
+        }
+      });
+    });
+  }
+
+  // Export for external callers (such as Atlas)
+  window.officials = {
+    openReviewDrawer: openOfficialsDrawer,
+    refreshOfficialsTabView: refreshOfficialsTabView,
+  };
 })();
+

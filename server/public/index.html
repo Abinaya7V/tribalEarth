@@ -128,7 +128,7 @@
         <div class="wordmark">
           <span class="wordmark-mark">◈</span>
           <div class="wordmark-text">
-            <span class="wordmark-title"><span data-i18n="header.title">TribalEarth</span> <em>AI</em></span>
+            <span class="wordmark-title" data-i18n="header.title">TribalEarth AI</span>
             <span class="wordmark-sub" data-i18n="header.sub">Forest Rights Claim Register</span>
           </div>
         </div>
@@ -149,16 +149,19 @@
       </div>
       <nav class="tab-nav" role="tablist" aria-label="Primary">
         <button class="tab-btn is-active" data-tab="file" role="tab" aria-selected="true">
-          <span class="tab-index">01</span> <span data-i18n="header.nav.file">File a Claim</span>
+          <span class="tab-index"></span> <span data-i18n="header.nav.file">File a Claim</span>
         </button>
         <button class="tab-btn" data-tab="register" role="tab" aria-selected="false">
-          <span class="tab-index">02</span> <span data-i18n="header.nav.register">Claims Register</span>
+          <span class="tab-index"></span> <span data-i18n="header.nav.register">Claims Register</span>
         </button>
         <button class="tab-btn" data-tab="myclaims" role="tab" aria-selected="false" hidden>
-          <span class="tab-index">03</span> <span data-i18n="header.nav.myclaims">My Claims</span>
+          <span class="tab-index"></span> <span data-i18n="header.nav.myclaims">My Claims</span>
         </button>
         <button class="tab-btn" data-tab="officials" role="tab" aria-selected="false">
-          <span class="tab-index">04</span> Officials Review
+          <span class="tab-index"></span> Officials Review
+        </button>
+        <button class="tab-btn" data-tab="atlas" role="tab" aria-selected="false" style="display:none;">
+          <span class="tab-index"></span> <span data-i18n="atlas.tab">Atlas</span>
         </button>
       </nav>
     </header>
@@ -350,6 +353,11 @@
                     <input type="number" id="yearsOfCultivation" name="yearsOfCultivation" min="0" placeholder="e.g. 12"
                       data-i18n-placeholder="form.step2.cultivationYearsPlaceholder">
                   </div>
+                  <div class="field">
+                    <label for="occupationSinceYear"><span data-i18n="filing.occupationSinceYear">Occupation since (Year)</span> <span class="hint" data-i18n="filing.occupationSinceYearHint">(optional)</span></label>
+                    <input type="number" id="occupationSinceYear" name="occupationSinceYear" min="1900" max="2099" placeholder="e.g. 1998"
+                      data-i18n-placeholder="filing.occupationSinceYearPlaceholder">
+                  </div>
                   <div class="field field-span2" id="mapField">
                     <label>Mark Location / Boundary (Map)</label>
                     <p class="field-help">Pin your location or draw a boundary polygon on the map.</p>
@@ -525,6 +533,130 @@
         </div>
       </section>
 
+      <!-- ============ TAB: ATLAS (Officer View Only) ============ -->
+      <section id="tab-atlas" class="tab-panel">
+        <div class="atlas-container">
+          <!-- Filters and Live Toolbar -->
+          <div class="atlas-toolbar">
+            <div class="atlas-filters">
+              <select id="atlasVillageSelect" aria-label="Filter by Village">
+                <option value="" data-i18n="atlas.filterVillage">All villages</option>
+              </select>
+              <select id="atlasStatusSelect" aria-label="Filter by Status">
+                <option value="" data-i18n="atlas.filterStatus">All statuses</option>
+                <option value="Submitted" data-i18n="atlas.status.submitted">Submitted</option>
+                <option value="Under Review" data-i18n="atlas.status.underReview">Under Review</option>
+                <option value="Escalated to DLC" data-i18n="atlas.status.escalated">Escalated to DLC</option>
+                <option value="Appealed" data-i18n="atlas.status.appealed">Appealed</option>
+                <option value="Approved" data-i18n="atlas.status.approved">Approved</option>
+                <option value="Rejected" data-i18n="atlas.status.rejected">Rejected</option>
+              </select>
+              <select id="atlasClaimTypeSelect" aria-label="Filter by Claim Type">
+                <option value="" data-i18n="atlas.filterClaimType">All claim types</option>
+                <option value="IFR">Individual (IFR)</option>
+                <option value="CR">Community (CR)</option>
+                <option value="CFR">Resource (CFR)</option>
+              </select>
+              <label class="atlas-toggle-label">
+                <input type="checkbox" id="atlasDisputedToggle">
+                <span data-i18n="atlas.filterDisputed">Disputed only</span>
+              </label>
+              <button id="atlasRefreshBtn" class="btn btn-ghost btn-sm" data-i18n="atlas.refresh">Refresh</button>
+            </div>
+            <div class="atlas-status-bar">
+              <span id="atlasLastUpdated" class="atlas-last-updated"></span>
+              <span id="atlasNotMappedMsg" class="atlas-not-mapped-chip" hidden></span>
+              <span id="atlasTruncatedMsg" class="atlas-truncated-chip" hidden></span>
+            </div>
+          </div>
+
+          <!-- Toast for new claims -->
+          <div id="atlasNewToast" class="atlas-toast" hidden>
+            <span id="atlasToastText"></span>
+            <button id="atlasToastFlyBtn" class="btn btn-sm btn-primary" data-i18n="atlas.flyTo">View</button>
+            <button id="atlasToastDismissBtn" class="atlas-toast-dismiss" aria-label="Dismiss">✕</button>
+          </div>
+
+          <!-- Atlas Main Layout: Map (Left) & Side Panel (Right) -->
+          <div class="atlas-layout">
+            <div class="atlas-map-wrapper">
+              <div id="atlasMap" class="atlas-map"></div>
+              <!-- Zero results overlay -->
+              <div id="atlasNoResultsOverlay" class="atlas-no-results-overlay" hidden>
+                <div class="atlas-no-results-card">
+                  <p id="atlasNoResultsTitle" class="atlas-no-results-title" data-i18n="atlas.noMatch">No claims match these filters</p>
+                  <p id="atlasNoResultsSubtitle" class="atlas-no-results-subtitle"></p>
+                  <button type="button" id="atlasClearFiltersBtn" class="btn btn-primary btn-sm" data-i18n="atlas.clearFilters">Clear filters</button>
+                </div>
+              </div>
+              <!-- Persistent boundary disclaimer -->
+              <div class="atlas-map-disclaimer" data-i18n="atlas.claimedBoundaryNote">
+                Boundaries are claimed by applicants and not surveyed; 'verified' means an officer checked the location on the map.
+              </div>
+              <!-- Collapsible Map Legend -->
+              <div class="atlas-legend">
+                <div class="atlas-legend-title" data-i18n="atlas.legend.title">Legend</div>
+                <div class="atlas-legend-item"><span class="atlas-legend-swatch swatch-submitted"></span> <span data-i18n="atlas.legend.submitted">Submitted / Under Review</span></div>
+                <div class="atlas-legend-item"><span class="atlas-legend-swatch swatch-escalated"></span> <span data-i18n="atlas.legend.escalated">Escalated to DLC</span></div>
+                <div class="atlas-legend-item"><span class="atlas-legend-swatch swatch-appealed"></span> <span data-i18n="atlas.legend.appealed">Appealed</span></div>
+                <div class="atlas-legend-item"><span class="atlas-legend-swatch swatch-approved"></span> <span data-i18n="atlas.legend.approved">Approved</span></div>
+                <div class="atlas-legend-item"><span class="atlas-legend-swatch swatch-rejected"></span> <span data-i18n="atlas.legend.rejected">Rejected</span></div>
+                <div class="atlas-legend-item"><span class="atlas-legend-swatch swatch-conflict"></span> <span data-i18n="atlas.legend.conflict">Open Conflict (Disputed)</span></div>
+              </div>
+            </div>
+
+            <!-- Side Panel (Desktop right sidebar / Mobile bottom sheet) -->
+            <aside id="atlasSidePanel" class="atlas-side-panel" aria-hidden="true" hidden>
+              <div class="atlas-panel-header">
+                <div class="atlas-panel-title-group">
+                  <h3 id="atlasPanelApplicantName"></h3>
+                  <div class="atlas-panel-meta">
+                    <span id="atlasPanelClaimId" class="claim-id-chip"></span>
+                    <span id="atlasPanelStatusBadge" class="status-badge"></span>
+                    <span id="atlasPanelTypeBadge" class="type-badge"></span>
+                  </div>
+                </div>
+                <button type="button" id="atlasPanelCloseBtn" class="drawer-close" aria-label="Close">✕</button>
+              </div>
+
+              <div id="atlasPanelBody" class="atlas-panel-body">
+                <div id="atlasPanelBoundaryStatus" class="atlas-boundary-status"></div>
+                <div id="atlasPanelMetaRows" class="atlas-meta-rows"></div>
+
+                <!-- Conflicts section -->
+                <div id="atlasPanelConflicts" class="atlas-section" hidden></div>
+
+                <!-- Rejection or Appeal note -->
+                <div id="atlasPanelRejectionAppeal" class="atlas-section" hidden></div>
+
+                <!-- Recent Activity Timeline -->
+                <div class="atlas-section">
+                  <h4 data-i18n="atlas.recentActivity">Recent Activity</h4>
+                  <ul id="atlasPanelTimeline" class="audit-trail-list"></ul>
+                </div>
+
+                <!-- Proofs & Classification -->
+                <div class="atlas-section">
+                  <h4 data-i18n="atlas.proofs">Proofs</h4>
+                  <ul id="atlasPanelProofs" class="atlas-proofs-list"></ul>
+                </div>
+
+                <!-- Rule 13 Checklist -->
+                <div class="atlas-section">
+                  <h4 data-i18n="atlas.checklist">Rule 13 Checklist Summary</h4>
+                  <div id="atlasPanelChecklist" class="checklist-summary"></div>
+                </div>
+
+                <!-- Full Review Button (Stage-authorized only) -->
+                <div id="atlasPanelActionArea" class="atlas-panel-actions" hidden>
+                  <button type="button" id="atlasOpenFullReviewBtn" class="btn btn-primary" data-i18n="atlas.openFullReview">Open full review</button>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <!-- Detail drawer -->
@@ -646,6 +778,7 @@
   <script src="/js/myclaims.js"></script>
   <script src="/js/voice.js"></script>
   <script src="/js/officials.js"></script>
+  <script src="/js/atlas.js"></script>
 </body>
 
 </html>

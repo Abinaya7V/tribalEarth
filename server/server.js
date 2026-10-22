@@ -59,7 +59,7 @@ process.on("unhandledRejection", (err) => {
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-const DATA_DIR = path.join(__dirname, "data");
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 
 // ---------- bootstrap storage ----------
@@ -67,6 +67,7 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const { readClaims, writeClaims } = require("./services/db");
+const conflictService = require("./services/conflictService");
 
 // A1. Claim ownership migration
 function migrateLegacyClaims() {
@@ -185,7 +186,24 @@ function stripClaimForApplicant(claim, user) {
   if (stripped.priorRejection) {
     stripped.priorRejection = { ...stripped.priorRejection, officerName: `${stripped.priorRejection.stage} Officer` };
   }
+  const hasOpenConflict = Array.isArray(stripped.conflicts) && stripped.conflicts.some(c => c.status === "open");
+  delete stripped.conflicts;
+  stripped.conflictNotice = Boolean(hasOpenConflict);
   return stripped;
+}
+
+function enrichConflictsForOfficer(conflicts, allClaims, user) {
+  if (!Array.isArray(conflicts)) return [];
+  return conflicts.map(c => {
+    const other = allClaims.find(o => o.claimId === c.otherClaimId);
+    const canReadOther = other ? canReadClaim(other, user) : false;
+    return {
+      ...c,
+      otherClaimStage: other ? other.currentStage : null,
+      otherApplicantName: canReadOther ? other.applicantName : null,
+      otherVillage: canReadOther ? other.village : null
+    };
+  });
 }
 
 function canReadClaim(claim, user) {
@@ -199,6 +217,39 @@ function canReadClaim(claim, user) {
   }
   if (claim.currentStage === allowedStage) return true;
   return false;
+}
+
+/**
+ * Atlas permission check:
+ * - User must be an officer (gram_sabha, sdlc, dlc)
+ * - Claim must have coordinates/geometry (legacy without coords cannot be mapped)
+ * - Jurisdiction match: if officer has state or district set, claim must match
+ */
+function canViewInAtlas(claim, user) {
+  if (!user || !["gram_sabha", "sdlc", "dlc"].includes(user.role)) {
+    return false;
+  }
+  if (!claim) return false;
+  const hasCoords = Boolean(
+    (claim.location && claim.location.latitude != null && claim.location.longitude != null) ||
+    claim.geometry
+  );
+  if (!hasCoords) return false;
+
+  const jur = user.jurisdiction;
+  if (jur) {
+    if (jur.state && jur.state.trim()) {
+      if (!claim.state || claim.state.trim().toLowerCase() !== jur.state.trim().toLowerCase()) {
+        return false;
+      }
+    }
+    if (jur.district && jur.district.trim()) {
+      if (!claim.district || claim.district.trim().toLowerCase() !== jur.district.trim().toLowerCase()) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 /**
@@ -283,34 +334,125 @@ app.post("/api/claims", requireRole("applicant"), upload.array("documents", 6), 
     claimType,
     landDescription,
     yearsOfCultivation,
+    occupationSinceYear,
     latitude,
     longitude,
     language,
     bilingualData,
   } = req.body;
 
+  const cleanupFiles = () => {
+    if (req.files && Array.isArray(req.files)) {
+      for (const f of req.files) {
+        try {
+          fs.unlinkSync(f.path);
+        } catch (_) {}
+      }
+    }
+  };
+
+  let parsedOccYear = null;
+  if (occupationSinceYear !== undefined && occupationSinceYear !== null && String(occupationSinceYear).trim() !== "") {
+    const yNum = Number(occupationSinceYear);
+    const currentYear = new Date().getFullYear();
+    if (!Number.isInteger(yNum) || yNum < 1900 || yNum > currentYear) {
+      cleanupFiles();
+      return res.status(400).json({
+        error: `occupationSinceYear must be an integer between 1900 and ${currentYear}.`,
+      });
+    }
+    parsedOccYear = yNum;
+  }
+
   if (!applicantName || !village || !district || !state || !claimType) {
+    cleanupFiles();
     return res.status(400).json({
       error:
         "Missing required fields: applicantName, village, district, state, claimType.",
     });
   }
   if (!VALID_CLAIM_TYPES.includes(claimType)) {
+    cleanupFiles();
     return res.status(400).json({
       error: `claimType must be one of ${VALID_CLAIM_TYPES.join(", ")}`,
     });
   }
 
+  // Location is mandatory: require coordinates or geometry
+  const hasPin =
+    latitude !== undefined &&
+    latitude !== "" &&
+    longitude !== undefined &&
+    longitude !== "";
+  const hasGeom = Boolean(req.body.geometry && req.body.geometry.trim());
+
+  if (!hasPin && !hasGeom) {
+    cleanupFiles();
+    return res.status(400).json({
+      error: "Location is mandatory: please provide coordinates or draw a boundary.",
+    });
+  }
+
+  let parsedGeometry = null;
+  if (hasGeom) {
+    try {
+      parsedGeometry = JSON.parse(req.body.geometry);
+    } catch (e) {
+      cleanupFiles();
+      return res.status(400).json({ error: "Invalid geometry JSON format." });
+    }
+    const geomValidation = geoService.validatePolygon(parsedGeometry);
+    if (!geomValidation.valid) {
+      cleanupFiles();
+      return res.status(400).json({ error: geomValidation.error });
+    }
+  }
+
+  let location = null;
+  if (hasPin) {
+    const latNum = parseFloat(latitude);
+    const lngNum = parseFloat(longitude);
+    if (
+      isNaN(latNum) ||
+      isNaN(lngNum) ||
+      !geoService.isPointInIndia(latNum, lngNum)
+    ) {
+      cleanupFiles();
+      return res.status(400).json({ error: "Coordinates must be inside India." });
+    }
+    location = { lat: latNum, lng: lngNum };
+  }
+
+  const computedAreaHa = parsedGeometry
+    ? geoService.computeAreaHa(parsedGeometry)
+    : null;
+
   const claims = readClaims();
   const claimId = generateClaimId(stateCode);
   const timestamp = nowISO();
 
-  const documents = (req.files || []).map((f) => ({
-    originalName: f.originalname,
-    storedName: f.filename,
-    url: `/api/claims/${claimId}/documents/${f.filename}`,
-    sizeBytes: f.size,
-  }));
+  const documents = (req.files || []).map((f) => {
+    let sha256 = null;
+    try {
+      const buf = fs.readFileSync(f.path);
+      sha256 = crypto.createHash("sha256").update(buf).digest("hex");
+    } catch (_) {}
+
+    return {
+      originalName: f.originalname,
+      storedName: f.filename,
+      url: `/api/claims/${claimId}/documents/${f.filename}`,
+      sizeBytes: f.size,
+      sha256,
+    };
+  });
+
+  let parsedBilingual = null;
+  if (bilingualData) {
+    try {
+      parsedBilingual = JSON.parse(bilingualData);
+    } catch (_) {}
+  }
 
   const claim = {
     claimId,
@@ -326,21 +468,22 @@ app.post("/api/claims", requireRole("applicant"), upload.array("documents", 6), 
     claimType,
     landDescription: landDescription || "",
     yearsOfCultivation: yearsOfCultivation || "",
-    location:
-      latitude && longitude
-        ? { lat: parseFloat(latitude), lng: parseFloat(longitude) }
-        : null,
-    geometry: req.body.geometry ? JSON.parse(req.body.geometry) : null,
+    occupationSinceYear: parsedOccYear,
+    location,
+    geometry: parsedGeometry,
     locationSource: req.body.locationSource || null,
-    accuracyMeters: req.body.accuracyMeters ? parseFloat(req.body.accuracyMeters) : null,
-    computedAreaHa: req.body.geometry ? geoService.computeAreaHa(JSON.parse(req.body.geometry)) : null,
+    accuracyMeters: req.body.accuracyMeters
+      ? parseFloat(req.body.accuracyMeters)
+      : null,
+    computedAreaHa,
     language: language || "en",
-    bilingualData: bilingualData ? JSON.parse(bilingualData) : null,
+    bilingualData: parsedBilingual,
     documents,
     currentStage: "Gram Sabha",
     status: "Submitted",
     createdAt: timestamp,
     updatedAt: timestamp,
+    conflicts: [],
     auditTrail: [
       {
         stage: "Gram Sabha",
@@ -353,9 +496,16 @@ app.post("/api/claims", requireRole("applicant"), upload.array("documents", 6), 
   };
 
   claims.push(claim);
+
+  // Run conflict detection across all claims
+  conflictService.detectConflicts(claim, claims);
+
   writeClaims(claims);
 
-  res.status(201).json({ message: "Claim submitted successfully.", claim });
+  res.status(201).json({
+    message: "Claim submitted successfully.",
+    claim: stripClaimForApplicant(claim, req.user),
+  });
 });
 
 /**
@@ -398,23 +548,38 @@ app.get("/api/claims/:id/geo", requireAuth, (req, res) => {
     return res.status(404).json({ error: "Claim not found." });
   }
 
-  const flags = geoService.computeFlags(claim, claims);
-  
+  let flags = geoService.computeFlags(claim, claims);
+  if (req.user.role === "applicant") {
+    flags = flags.filter((f) => f.code !== "OVERLAPS_OTHER_CLAIM");
+  }
+
+  // Active/open conflicts on this claim for officer map display
+  const conflictingClaimIds = new Set(
+    (claim.conflicts || [])
+      .filter((c) => c.status !== "moot")
+      .map((c) => c.otherClaimId)
+  );
+
   // Nearby claims (anonymous dots if they can't be read by this user)
   const nearby = [];
   if (claim.geometry || claim.location) {
     for (const other of claims) {
       if (other.claimId === claim.claimId) continue;
       if (!other.geometry && !other.location) continue;
-      
+
       const canReadOther = canReadClaim(other, req.user);
-      nearby.push({
+      const isConflicting = conflictingClaimIds.has(other.claimId);
+      const item = {
         claimId: canReadOther ? other.claimId : "anonymous",
         claimType: canReadOther ? other.claimType : "Unknown",
         location: other.location,
         geometry: other.geometry,
-        anonymized: !canReadOther
-      });
+        anonymized: !canReadOther,
+      };
+      if (req.user.role !== "applicant" && isConflicting) {
+        item.conflict = true;
+      }
+      nearby.push(item);
     }
   }
 
@@ -425,7 +590,7 @@ app.get("/api/claims/:id/geo", requireAuth, (req, res) => {
     accuracyMeters: claim.accuracyMeters,
     computedAreaHa: claim.computedAreaHa,
     flags,
-    nearby
+    nearby,
   });
 });
 
@@ -434,47 +599,59 @@ app.patch("/api/my/claims/:id/location", requireRole("applicant"), (req, res) =>
   const claims = readClaims();
   const idx = claims.findIndex((c) => c.claimId === req.params.id);
   if (idx === -1) return res.status(404).json({ error: "Claim not found." });
-  
+
   const claim = claims[idx];
   if (claim.ownerId !== req.user.username || claim.legacy) {
     return res.status(404).json({ error: "Claim not found." });
   }
-  
+
   // Must be still editable (e.g. submitted or rejected but appealing)
   if (claim.currentStage !== "Gram Sabha" && claim.status !== "Appealed") {
     return res.status(400).json({ error: "Location can no longer be edited at this stage." });
   }
-  
+
   if (latitude !== undefined && longitude !== undefined) {
-    if (!geoService.isPointInIndia(parseFloat(latitude), parseFloat(longitude))) {
+    const latNum = parseFloat(latitude);
+    const lngNum = parseFloat(longitude);
+    if (!geoService.isPointInIndia(latNum, lngNum)) {
       return res.status(400).json({ error: "Coordinates must be inside India." });
     }
-    claim.location = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+    claim.location = { lat: latNum, lng: lngNum };
   }
-  
+
   if (geometry) {
-    const val = geoService.validatePolygon(geometry);
+    let geomObj = geometry;
+    if (typeof geometry === "string") {
+      try {
+        geomObj = JSON.parse(geometry);
+      } catch (e) {
+        return res.status(400).json({ error: "Invalid geometry JSON format." });
+      }
+    }
+    const val = geoService.validatePolygon(geomObj);
     if (!val.valid) return res.status(400).json({ error: val.error });
-    claim.geometry = geometry;
-    claim.computedAreaHa = geoService.computeAreaHa(geometry);
+    claim.geometry = geomObj;
+    claim.computedAreaHa = geoService.computeAreaHa(geomObj);
   }
-  
+
   if (locationSource) claim.locationSource = locationSource;
   if (accuracyMeters) claim.accuracyMeters = parseFloat(accuracyMeters);
-  
+
   claim.updatedAt = nowISO();
   claim.auditTrail.push({
     stage: claim.currentStage,
     action: "Location Updated",
     actor: "Applicant",
     note: "Location or boundary was updated.",
-    timestamp: claim.updatedAt
+    timestamp: claim.updatedAt,
   });
-  
+
+  // Re-run conflict detection
+  conflictService.detectConflicts(claim, claims);
+
   writeClaims(claims);
   res.json({ message: "Location updated successfully.", claim: stripClaimForApplicant(claim, req.user) });
 });
-
 
 /**
  * GET /api/claims/:id
@@ -484,7 +661,35 @@ app.get("/api/claims/:id", requireAuth, (req, res) => {
   const claim = claims.find((c) => c.claimId === req.params.id);
   if (!claim) return res.status(404).json({ error: "Claim not found." });
   if (!canReadClaim(claim, req.user)) return res.status(404).json({ error: "Claim not found." });
-  res.json({ claim: stripClaimForApplicant(claim, req.user) });
+
+  if (req.user.role === "applicant") {
+    return res.json({ claim: stripClaimForApplicant(claim, req.user) });
+  }
+
+  const enrichedClaim = {
+    ...claim,
+    conflicts: enrichConflictsForOfficer(claim.conflicts, claims, req.user),
+  };
+  res.json({ claim: enrichedClaim });
+});
+
+/**
+ * GET /api/claims/:id/conflicts
+ * Returns enriched conflicts for officers.
+ */
+app.get("/api/claims/:id/conflicts", requireAuth, (req, res) => {
+  const claims = readClaims();
+  const claim = claims.find((c) => c.claimId === req.params.id);
+  if (!claim || !canReadClaim(claim, req.user)) {
+    return res.status(404).json({ error: "Claim not found." });
+  }
+
+  if (req.user.role === "applicant") {
+    return res.status(403).json({ error: "Access denied." });
+  }
+
+  const enriched = enrichConflictsForOfficer(claim.conflicts, claims, req.user);
+  res.json({ conflicts: enriched });
 });
 
 app.get("/api/my/claims", requireRole("applicant"), (req, res) => {
@@ -590,15 +795,46 @@ app.post("/api/my/claims/:id/appeal", requireRole("applicant"), (req, res) => {
     timestamp
   });
 
+  // Re-run conflict detection since claim is revived
+  conflictService.detectConflicts(claim, claims);
+
   writeClaims(claims);
   res.json({ message: "Appeal filed successfully.", claim: stripClaimForApplicant(claim, req.user) });
 });
 
+function logAtlasAccess(user, claimId, action) {
+  try {
+    const effectiveDataDir = process.env.DATA_DIR || path.join(__dirname, "data");
+    const logPath = path.join(effectiveDataDir, "atlas-access.log");
+    const entry = JSON.stringify({
+      ts: nowISO(),
+      user: user.username,
+      role: user.role,
+      claimId,
+      action,
+    }) + "\n";
+    fs.appendFileSync(logPath, entry, "utf8");
+  } catch (err) {
+    console.error("[atlas-access-log] Failed to write log:", err);
+  }
+}
+
 app.get("/api/claims/:id/documents/:docId", requireAuth, (req, res) => {
   const claims = readClaims();
   const claim = claims.find((c) => c.claimId === req.params.id);
-  if (!claim || !canReadClaim(claim, req.user)) {
+  if (!claim) {
     return res.status(404).json({ error: "Claim not found." });
+  }
+
+  const hasStandardAccess = canReadClaim(claim, req.user);
+  const hasAtlasAccess = !hasStandardAccess && canViewInAtlas(claim, req.user);
+
+  if (!hasStandardAccess && !hasAtlasAccess) {
+    return res.status(404).json({ error: "Claim not found." });
+  }
+
+  if (hasAtlasAccess) {
+    logAtlasAccess(req.user, claim.claimId, "download_document");
   }
 
   const doc = claim.documents.find(d => d.storedName === req.params.docId);
@@ -669,6 +905,14 @@ app.get("/api/officials/queue", (req, res) => {
       daysPending,
       slaExceeded: daysPending > SLA_DAYS,
       priorRejection: c.priorRejection || null,
+      conflictCount: conflictService.countOpenCompetingConflicts(c),
+      hasDuplicateProof: Boolean(
+        c.conflicts &&
+          c.conflicts.some(
+            (conf) => conf.reasons && conf.reasons.includes("DUPLICATE_PROOF")
+          )
+      ),
+      notCheckable: !c.geometry && !c.location,
     };
   });
 
@@ -871,6 +1115,14 @@ app.post("/api/claims/:id/decision", requireStageRole, (req, res) => {
   if (idx === -1) return res.status(404).json({ error: "Claim not found." });
 
   const claim = claims[idx];
+
+  // Refuse any action on a claim whose status is Rejected or Approved
+  if (claim.status === "Rejected" || claim.status === "Approved") {
+    return res.status(409).json({
+      error: `Cannot make a decision on a claim that is already ${claim.status}.`,
+    });
+  }
+
   const timestamp = nowISO();
   const rejectingStage = claim.currentStage;
 
@@ -933,11 +1185,25 @@ app.post("/api/claims/:id/decision", requireStageRole, (req, res) => {
       note: justification.trim(),
       timestamp,
     });
+
+    // Terminal rejection: mark counterpart conflict entries "moot"
+    conflictService.mootConflictsForClaim(claim, claims);
+
     writeClaims(claims);
     return res.json({ message: `Claim rejected at ${rejectingStage} — this decision is final.`, claim });
   }
 
   // action === "approve"
+  // Block approval if any open competing conflict exists
+  if (conflictService.hasOpenCompetingConflicts(claim)) {
+    const count = conflictService.countOpenCompetingConflicts(claim);
+    return res.status(409).json({
+      error: "Cannot approve claim: open competing claim conflicts must be resolved first.",
+      code: "CONFLICT_UNRESOLVED",
+      count,
+    });
+  }
+
   const currentIdx = STAGES.indexOf(claim.currentStage);
   const isFinalStage = currentIdx === STAGES.length - 1;
 
@@ -968,6 +1234,75 @@ app.post("/api/claims/:id/decision", requireStageRole, (req, res) => {
   });
   writeClaims(claims);
   res.json({ message: `Claim approved and forwarded to ${nextStage}.`, claim });
+});
+
+/**
+ * POST /api/claims/:id/conflicts/:conflictId/resolve
+ * Resolves an open conflict on a claim. Guarded by requireStageRole.
+ * body: { finding, reason }
+ */
+app.post("/api/claims/:id/conflicts/:conflictId/resolve", requireStageRole, (req, res) => {
+  const { finding, reason } = req.body || {};
+  const validFindings = [
+    "boundaries_do_not_conflict",
+    "shared_use_accepted",
+    "this_claim_has_stronger_evidence",
+  ];
+
+  if (!finding || !validFindings.includes(finding)) {
+    return res.status(400).json({
+      error: `finding must be one of: ${validFindings.join(", ")}`,
+    });
+  }
+
+  const trimmedReason = (reason || "").trim();
+  if (trimmedReason.length < 10) {
+    return res.status(400).json({
+      error: "A written reason of at least 10 characters is required to resolve a conflict.",
+    });
+  }
+
+  const claims = readClaims();
+  const claim = claims.find((c) => c.claimId === req.params.id);
+  if (!claim) return res.status(404).json({ error: "Claim not found." });
+
+  if (!Array.isArray(claim.conflicts)) {
+    claim.conflicts = [];
+  }
+
+  const conflict = claim.conflicts.find((c) => c.conflictId === req.params.conflictId);
+  if (!conflict) {
+    return res.status(404).json({ error: "Conflict not found on this claim." });
+  }
+
+  const timestamp = nowISO();
+  conflict.status = "resolved";
+  conflict.resolution = {
+    finding,
+    reason: trimmedReason,
+    resolvedBy: req.user.displayName,
+    resolvedAt: timestamp,
+    stage: claim.currentStage,
+  };
+
+  claim.updatedAt = timestamp;
+  if (!Array.isArray(claim.auditTrail)) claim.auditTrail = [];
+  claim.auditTrail.push({
+    stage: claim.currentStage,
+    action: "Conflict resolved",
+    actor: req.user.displayName,
+    note: `Resolved conflict with ${conflict.otherClaimId}: ${finding}. Reason: ${trimmedReason}`,
+    timestamp,
+  });
+
+  writeClaims(claims);
+
+  const enrichedConflicts = enrichConflictsForOfficer(claim.conflicts, claims, req.user);
+  res.json({
+    success: true,
+    message: "Conflict resolved successfully.",
+    conflicts: enrichedConflicts,
+  });
 });
 
 /**
@@ -1079,6 +1414,364 @@ app.post("/api/voice/tts", express.json(), async (req, res) => {
     return res.status(result.configured ? 502 : 503).json(result);
   }
   res.json(result);
+});
+
+// ==========================================
+// Phase 2: Atlas API (Read-only for Officers)
+// ==========================================
+
+function getClaimGrantedAt(claim) {
+  if (claim.status !== "Approved" || !Array.isArray(claim.auditTrail)) return null;
+  const approvedEntry = [...claim.auditTrail].reverse().find(a => a.action === "Approved");
+  return approvedEntry ? approvedEntry.timestamp : null;
+}
+
+function computeFeatureBbox(geom, loc) {
+  let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+  const update = (lng, lat) => {
+    if (typeof lng === "number" && typeof lat === "number" && !isNaN(lng) && !isNaN(lat)) {
+      if (lng < minLng) minLng = lng;
+      if (lat < minLat) minLat = lat;
+      if (lng > maxLng) maxLng = lng;
+      if (lat > maxLat) maxLat = lat;
+    }
+  };
+
+  if (geom && geom.coordinates) {
+    const coords = geom.coordinates;
+    if (geom.type === "Polygon") {
+      for (const ring of coords) {
+        if (Array.isArray(ring)) {
+          for (const pt of ring) {
+            if (Array.isArray(pt) && pt.length >= 2) update(pt[0], pt[1]);
+          }
+        }
+      }
+    } else if (geom.type === "MultiPolygon") {
+      for (const poly of coords) {
+        if (Array.isArray(poly)) {
+          for (const ring of poly) {
+            if (Array.isArray(ring)) {
+              for (const pt of ring) {
+                if (Array.isArray(pt) && pt.length >= 2) update(pt[0], pt[1]);
+              }
+            }
+          }
+        }
+      }
+    } else if (geom.type === "Point") {
+      if (Array.isArray(coords) && coords.length >= 2) update(coords[0], coords[1]);
+    }
+  } else if (loc && typeof loc.lng === "number" && typeof loc.lat === "number") {
+    update(loc.lng, loc.lat);
+  }
+
+  if (minLng === Infinity) return null;
+  return [minLng, minLat, maxLng, maxLat];
+}
+
+function bboxesIntersect(b1, b2) {
+  return !(b1[2] < b2[0] || b1[0] > b2[2] || b1[3] < b2[1] || b1[1] > b2[3]);
+}
+
+/**
+ * GET /api/atlas/summary
+ * Returns aggregated stats and village bounding boxes for viewable mapped claims.
+ */
+app.get("/api/atlas/summary", requireAuth, (req, res) => {
+  if (!["gram_sabha", "sdlc", "dlc"].includes(req.user.role)) {
+    return res.status(403).json({ error: "Atlas requires an officer role." });
+  }
+
+  const allClaims = readClaims();
+  let notMapped = 0;
+  const viewableMapped = [];
+
+  const jur = req.user.jurisdiction;
+  for (const c of allClaims) {
+    if (jur) {
+      if (jur.state && jur.state.trim()) {
+        if (!c.state || c.state.trim().toLowerCase() !== jur.state.trim().toLowerCase()) continue;
+      }
+      if (jur.district && jur.district.trim()) {
+        if (!c.district || c.district.trim().toLowerCase() !== jur.district.trim().toLowerCase()) continue;
+      }
+    }
+
+    const hasCoords = Boolean(
+      (c.location && c.location.latitude != null && c.location.longitude != null) ||
+      (c.location && c.location.lat != null && c.location.lng != null) ||
+      c.geometry
+    );
+
+    if (!hasCoords) {
+      notMapped++;
+    } else {
+      viewableMapped.push(c);
+    }
+  }
+
+  const byStatus = {};
+  const byClaimType = {};
+  let totalAreaHa = 0;
+  let approvedAreaHa = 0;
+  const villageMap = new Map(); // key: state|district|village
+
+  for (const c of viewableMapped) {
+    const status = c.status || "Submitted";
+    byStatus[status] = (byStatus[status] || 0) + 1;
+
+    const type = c.claimType || "IFR";
+    byClaimType[type] = (byClaimType[type] || 0) + 1;
+
+    const area = Number(c.computedAreaHa) || 0;
+    totalAreaHa += area;
+    if (status === "Approved") {
+      approvedAreaHa += area;
+    }
+
+    const vKey = `${c.state || ""}|||${c.district || ""}|||${c.village || ""}`;
+    if (!villageMap.has(vKey)) {
+      villageMap.set(vKey, {
+        state: c.state || "",
+        district: c.district || "",
+        village: c.village || "",
+        count: 0,
+        bbox: null,
+      });
+    }
+    const vObj = villageMap.get(vKey);
+    vObj.count++;
+    const cBbox = computeFeatureBbox(c.geometry, c.location);
+    if (cBbox) {
+      if (!vObj.bbox) {
+        vObj.bbox = [...cBbox];
+      } else {
+        if (cBbox[0] < vObj.bbox[0]) vObj.bbox[0] = cBbox[0];
+        if (cBbox[1] < vObj.bbox[1]) vObj.bbox[1] = cBbox[1];
+        if (cBbox[2] > vObj.bbox[2]) vObj.bbox[2] = cBbox[2];
+        if (cBbox[3] > vObj.bbox[3]) vObj.bbox[3] = cBbox[3];
+      }
+    }
+  }
+
+  const villages = Array.from(villageMap.values()).map(v => ({
+    state: v.state,
+    district: v.district,
+    village: v.village,
+    count: v.count,
+    bbox: v.bbox || [0, 0, 0, 0],
+  }));
+
+  villages.sort((a, b) => b.count - a.count);
+
+  res.json({
+    totalMapped: viewableMapped.length,
+    notMapped,
+    byStatus,
+    byClaimType,
+    totalAreaHa: Number(totalAreaHa.toFixed(2)),
+    approvedAreaHa: Number(approvedAreaHa.toFixed(2)),
+    villages,
+  });
+});
+
+/**
+ * GET /api/atlas/features
+ * GeoJSON FeatureCollection query with viewport bbox and filters.
+ */
+app.get("/api/atlas/features", requireAuth, (req, res) => {
+  if (!["gram_sabha", "sdlc", "dlc"].includes(req.user.role)) {
+    return res.status(403).json({ error: "Atlas requires an officer role." });
+  }
+
+  const {
+    bbox,
+    state,
+    district,
+    village,
+    status,
+    claimType,
+    conflict,
+    limit: queryLimit,
+  } = req.query;
+
+  let filterBbox = null;
+  if (bbox) {
+    const parts = bbox.split(",").map(Number);
+    if (parts.length !== 4 || parts.some(n => isNaN(n) || !isFinite(n))) {
+      return res.status(400).json({ error: "bbox must be 4 comma-separated finite numbers: minLng,minLat,maxLng,maxLat" });
+    }
+    filterBbox = parts; // [minLng, minLat, maxLng, maxLat]
+  }
+
+  const maxLimit = 1000;
+  let parsedLimit = queryLimit ? parseInt(queryLimit, 10) : 500;
+  if (isNaN(parsedLimit) || parsedLimit <= 0) parsedLimit = 500;
+  if (parsedLimit > maxLimit) parsedLimit = maxLimit;
+
+  const allClaims = readClaims();
+  const features = [];
+  let totalMatching = 0;
+
+  for (const c of allClaims) {
+    if (!canViewInAtlas(c, req.user)) continue;
+
+    // Attribute filters
+    if (state && c.state && c.state.trim().toLowerCase() !== state.trim().toLowerCase()) continue;
+    if (district && c.district && c.district.trim().toLowerCase() !== district.trim().toLowerCase()) continue;
+    if (village && c.village && c.village.trim().toLowerCase() !== village.trim().toLowerCase()) continue;
+    if (status && c.status !== status) continue;
+    if (claimType && c.claimType !== claimType) continue;
+
+    const hasOpenConflict = conflictService.hasOpenCompetingConflicts(c);
+    if (conflict === "true" && !hasOpenConflict) continue;
+
+    // Determine geometry
+    let featureGeom = null;
+    let boundaryKind = null;
+
+    if (c.geometry && c.geometry.type) {
+      featureGeom = c.geometry;
+      boundaryKind = "polygon";
+    } else if (c.location) {
+      const lng = typeof c.location.lng === "number" ? c.location.lng : (typeof c.location.longitude === "number" ? c.location.longitude : null);
+      const lat = typeof c.location.lat === "number" ? c.location.lat : (typeof c.location.latitude === "number" ? c.location.latitude : null);
+      if (lng != null && lat != null && !isNaN(lng) && !isNaN(lat)) {
+        featureGeom = { type: "Point", coordinates: [lng, lat] };
+        boundaryKind = "point";
+      }
+    }
+
+    if (!featureGeom) continue;
+
+    // Viewport intersection
+    const cBbox = computeFeatureBbox(featureGeom, c.location);
+    if (!cBbox) continue;
+
+    if (filterBbox && !bboxesIntersect(filterBbox, cBbox)) {
+      continue;
+    }
+
+    totalMatching++;
+    if (features.length < parsedLimit) {
+      const verifiedOnMap = Boolean(c.mapCheck && c.mapCheck.officerConfirmed);
+      features.push({
+        type: "Feature",
+        geometry: featureGeom,
+        properties: {
+          claimId: c.claimId,
+          applicantName: c.applicantName || "",
+          village: c.village || "",
+          district: c.district || "",
+          claimType: c.claimType || "IFR",
+          status: c.status || "Submitted",
+          stage: c.currentStage || "Gram Sabha",
+          areaHa: c.computedAreaHa != null ? Number(c.computedAreaHa) : null,
+          boundaryKind,
+          verifiedOnMap,
+          hasOpenConflict,
+          occupationSinceYear: c.occupationSinceYear != null ? c.occupationSinceYear : null,
+          grantedAt: getClaimGrantedAt(c),
+          createdAt: c.createdAt || null,
+        },
+      });
+    }
+  }
+
+  res.json({
+    type: "FeatureCollection",
+    features,
+    total: totalMatching,
+    truncated: totalMatching > parsedLimit,
+  });
+});
+
+/**
+ * GET /api/atlas/claims/:id
+ * Detailed side panel data. Whitelists fields and logs access to atlas-access.log.
+ */
+app.get("/api/atlas/claims/:id", requireAuth, (req, res) => {
+  if (!["gram_sabha", "sdlc", "dlc"].includes(req.user.role)) {
+    return res.status(403).json({ error: "Atlas requires an officer role." });
+  }
+
+  const claims = readClaims();
+  const claim = claims.find(c => c.claimId === req.params.id);
+  if (!claim || !canViewInAtlas(claim, req.user)) {
+    return res.status(404).json({ error: "Claim not found." });
+  }
+
+  logAtlasAccess(req.user, claim.claimId, "view_detail");
+
+  const timelineEntries = Array.isArray(claim.auditTrail) ? [...claim.auditTrail] : [];
+  timelineEntries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const timeline = timelineEntries.slice(0, 15).map(e => ({
+    stage: e.stage || "",
+    action: e.action || "",
+    actor: e.actor || "",
+    note: e.note || "",
+    timestamp: e.timestamp || "",
+  }));
+
+  const documents = (claim.documents || []).map((d, index) => ({
+    index,
+    originalName: d.originalName,
+    sizeBytes: d.sizeBytes,
+    url: `/api/claims/${claim.claimId}/documents/${d.storedName}`,
+    confirmedCategory: d.confirmedCategory || null,
+  }));
+
+  const checklist = documentClassificationService.computeChecklist(claim.documents || []);
+
+  const conflicts = (claim.conflicts || []).map(conf => ({
+    otherClaimId: conf.otherClaimId,
+    kind: conf.kind,
+    reasons: conf.reasons || [],
+    status: conf.status,
+  }));
+
+  const verifiedOnMap = Boolean(claim.mapCheck && claim.mapCheck.officerConfirmed);
+
+  const detail = {
+    claimId: claim.claimId,
+    applicantName: claim.applicantName || "",
+    village: claim.village || "",
+    district: claim.district || "",
+    state: claim.state || "",
+    claimType: claim.claimType || "IFR",
+    status: claim.status || "Submitted",
+    stage: claim.currentStage || "Gram Sabha",
+    areaHa: claim.computedAreaHa != null ? Number(claim.computedAreaHa) : null,
+    boundaryKind: claim.geometry ? "polygon" : "point",
+    verifiedOnMap,
+    hasOpenConflict: conflictService.hasOpenCompetingConflicts(claim),
+    occupationSinceYear: claim.occupationSinceYear != null ? claim.occupationSinceYear : null,
+    grantedAt: getClaimGrantedAt(claim),
+    createdAt: claim.createdAt || null,
+    landDescription: claim.landDescription || "",
+    claimedAreaHa: claim.computedAreaHa != null ? Number(claim.computedAreaHa) : null,
+    locationSource: claim.locationSource || null,
+    accuracyMeters: claim.accuracyMeters != null ? Number(claim.accuracyMeters) : null,
+    mapCheck: claim.mapCheck ? {
+      confirmedBy: claim.mapCheck.confirmedBy || null,
+      confirmedAt: claim.mapCheck.confirmedAt || null,
+      observation: claim.mapCheck.observation || "",
+    } : null,
+    timeline,
+    documents,
+    checklist,
+    conflicts,
+    rejectionReason: claim.rejection ? claim.rejection.justification : null,
+    priorRejection: claim.priorRejection || null,
+    appeal: claim.appeal ? {
+      grounds: claim.appeal.grounds,
+      filedAt: claim.appeal.filedAt,
+      appellant: claim.appeal.appellant,
+    } : null,
+  };
+
+  res.json({ claim: detail });
 });
 
 // ---------- centralized error handler ----------

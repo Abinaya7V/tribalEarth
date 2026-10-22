@@ -240,5 +240,102 @@
     "locationNotProvided": "ᱵᱟᱝ ᱮᱢ ᱟᱠᱟᱱᱟ",
     "errorLoading": "ᱫᱟᱵᱤ ᱞᱳᱰ ᱨᱮ ᱵᱷᱩᱞ ᱦᱩᱭ ᱮᱱᱟ᱾",
     "errorLoadingDetail": "ᱫᱟᱵᱤ ᱵᱤᱵᱚᱨᱚᱱ ᱞᱳᱰ ᱵᱟᱝ ᱦᱩᱭ ᱞᱮᱱᱟ᱾"
+  },
+  "appeal": {
+    "title": "ᱟᱯᱤᱞ ᱮᱢ ᱢᱮ",
+    "subtitle": "᱖᱐ ᱢᱟᱦᱟᱸ ᱵᱷᱤᱛᱨᱤ ᱨᱮ ᱟᱹᱛᱩ ᱵᱟᱹᱹᱭᱥᱤ ᱨᱮᱭᱟᱜ ᱵᱟᱹᱜᱤ ᱵᱤᱨᱩᱫᱷ ᱨᱮ SDLC ᱨᱮ ᱟᱯᱤᱞ ᱨᱮᱭᱟᱜ ᱟᱹᱭᱫᱟᱹᱨᱤ ᱢᱮᱱᱟᱜ-ᱟ ᱾",
+    "groundsLabel": "ᱟᱯᱤᱞ ᱨᱮᱭᱟᱜ ᱠᱟᱨᱚᱱ",
+    "groundsPlaceholder": "ᱫᱟᱵᱤ ᱪᱮᱫᱟᱜ ᱵᱟᱝ ᱵᱟᱹᱜᱤ ᱦᱩᱭᱩᱜ ᱠᱟᱛᱷᱟ ᱚᱱᱟ ᱚᱞ ᱢᱮ...",
+    "submitBtn": "ᱟᱯᱤᱞ ᱡᱚᱢᱟᱭ ᱢᱮ"
+  },
+  "conflict": {
+    "banner": {
+      "title": "ᱦᱮᱯᱨᱟᱣ ᱫᱟᱵᱤ ᱧᱟᱢ ᱮᱱᱟ",
+      "competing": "ᱱᱚᱶᱟ ᱫᱟᱵᱤ ᱨᱮ ᱦᱮᱯᱨᱟᱣ ᱢᱮᱱᱟᱜ-ᱟ ᱾ ᱥᱟᱱᱟᱢ ᱵᱤᱵᱟᱹᱫᱽ ᱵᱟᱝ ᱥᱚᱞᱦᱮ ᱦᱟᱹᱵᱤᱡ ᱢᱚᱧᱡᱩᱨ ᱵᱚᱸᱫᱽ ᱛᱟᱦᱮᱸᱱᱟ ᱾",
+      "duplicate": "ᱢᱤᱫ ᱞᱮᱠᱟᱱ ᱫᱟᱵᱤ (ᱱᱩᱭ ᱟᱨᱡᱤᱭᱟᱹ ᱜᱮ)"
+    },
+    "badge": "ᱵᱤᱵᱟᱹᱫᱽ",
+    "duplicate": {
+      "label": "ᱢᱤᱫ ᱜᱮ ᱥᱟᱹᱠᱷᱤ ᱠᱟᱜᱚᱡᱽ",
+      "desc": "ᱱᱩᱭ ᱟᱨᱡᱤᱭᱟᱹ ᱟᱜ ᱮᱴᱟᱜ ᱫᱟᱵᱤ ᱨᱮ ᱥᱤᱢᱟᱹ ᱟᱨᱵᱟᱝ ᱠᱟᱜᱚᱡᱽ ᱢᱤᱫ ᱜᱮᱭᱟ ᱾ ᱱᱚᱶᱟ ᱫᱚ ᱵᱟᱰᱟᱭ ᱞᱟᱹᱜᱤᱫ ᱠᱟᱱᱟ ᱾"
+    },
+    "resolve": {
+      "finding": {
+        "title": "ᱚᱯᱷᱤᱥᱟᱨ ᱟᱜ ᱯᱷᱟᱹᱭᱥᱟᱞᱟ",
+        "boundaries_do_not_conflict": "ᱥᱤᱢᱟᱹ ᱨᱮ ᱪᱮᱫ ᱵᱤᱵᱟᱹᱫᱽ ᱵᱟᱹᱱᱩᱜ-ᱟ",
+        "shared_use_accepted": "ᱥᱟᱶᱛᱮ ᱵᱮᱵᱷᱟᱨ ᱦᱮᱸ ᱥᱟᱹᱨᱤ ᱮᱱᱟ",
+        "this_claim_has_stronger_evidence": "ᱱᱚᱶᱟ ᱫᱟᱵᱤ ᱨᱮ ᱠᱮᱴᱮᱡ ᱥᱟᱹᱵᱩᱛ ᱢᱮᱱᱟᱜ-ᱟ"
+      },
+      "reason": "ᱚᱞ ᱛᱮ ᱠᱟᱨᱚᱱ (ᱠᱚᱢ ᱠᱷᱚᱱ ᱑᱐ ᱟᱠᱷᱚᱨ)",
+      "reasonPlaceholder": "ᱥᱚᱞᱦᱮ ᱨᱮᱭᱟᱜ ᱠᱟᱨᱚᱱ ᱚᱞ ᱢᱮ...",
+      "submit": "ᱵᱤᱵᱟᱹᱫᱽ ᱥᱚᱞᱦᱮᱭ ᱢᱮ",
+      "resolvedHeader": "ᱥᱚᱞᱦᱮ ᱟᱠᱟᱱ ᱵᱤᱵᱟᱹᱫᱽ ᱠᱚ"
+    },
+    "approve": {
+      "blocked": "ᱱᱚᱶᱟ ᱫᱟᱵᱤ ᱢᱚᱧᱡᱩᱨ ᱢᱟᱲᱟᱝ ᱥᱟᱱᱟᱢ ᱦᱮᱯᱨᱟᱣ ᱵᱤᱵᱟᱹᱫᱽ ᱥᱚᱞᱦᱮ ᱞᱟᱹᱠᱛᱤᱭᱟ ᱾"
+    },
+    "applicantNoticeTitle": "ᱯᱚᱨᱠᱷᱟᱣ ᱪᱟᱞᱟᱜ ᱠᱟᱱᱟ",
+    "applicantNotice": "ᱟᱢᱟᱜ ᱫᱟᱵᱤ ᱨᱮᱭᱟᱜ ᱥᱤᱢᱟᱹ ᱟᱨ ᱠᱟᱜᱚᱡᱽ ᱚᱯᱷᱤᱥᱟᱨ ᱠᱚ ᱯᱚᱨᱠᱷᱟᱣ ᱮᱫᱟ ᱾",
+    "notCheckable": "ᱵᱟᱝ ᱯᱚᱨᱠᱷᱟᱣ ᱫᱟᱲᱮᱭᱟᱜ-ᱟ (ᱴᱷᱟᱶ ᱵᱟᱹᱱᱩᱜ-ᱟ)",
+    "reasons": {
+      "overlap": "ᱥᱤᱢᱟᱹ ᱢᱤᱫ ᱮᱱᱟ",
+      "duplicateProof": "ᱢᱤᱫ ᱜᱮ ᱥᱟᱹᱠᱷᱤ"
+    }
+  },
+  "filing": {
+    "locationRequired": "ᱴᱷᱟᱶ ᱮᱢ ᱞᱟᱹᱠᱛᱤ ᱜᱮᱭᱟ: ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱢᱮᱯ ᱨᱮ ᱴᱷᱟᱶ ᱪᱤᱱᱦᱟᱹᱭ ᱢᱮ ᱟᱨᱵᱟᱝ ᱥᱤᱢᱟᱹ ᱵᱮᱱᱟᱣ ᱢᱮ ᱾",
+    "occupationSinceYear": "ᱫᱚᱠᱷᱚᱞ ᱮᱛᱚᱦᱚᱵ ᱥᱮᱨᱢᱟ",
+    "occupationSinceYearHint": "ᱞᱮᱠᱟ ᱑᱙᱙᱘ (᱑᱙᱐᱐ ᱟᱨ ᱱᱤᱛᱚᱜᱟᱜ ᱥᱮᱨᱢᱟ ᱛᱟᱞᱟ ᱨᱮ)",
+    "occupationSinceYearPlaceholder": "ᱞᱮᱠᱟ ᱑᱙᱙᱘"
+  },
+  "atlas": {
+    "tab": "ᱮᱴᱞᱟᱥ",
+    "filterVillage": "ᱥᱟᱱᱟᱢ ᱟᱹᱛᱩ",
+    "filterStatus": "ᱥᱟᱱᱟᱢ ᱦᱟᱞᱚᱛ",
+    "filterClaimType": "ᱥᱟᱱᱟᱢ ᱫᱟᱵᱤ ᱞᱮᱠᱟᱱ",
+    "filterDisputed": "ᱵᱤᱵᱟᱹᱫᱽ ᱟᱠᱟᱱ ᱜᱮ",
+    "refresh": "ᱱᱟᱶᱟ ᱠᱚᱨᱟᱣ",
+    "lastUpdated": "ᱢᱩᱪᱟᱹᱫ ᱟᱹᱨᱩ",
+    "notMappedCount": "{count} ᱫᱟᱵᱤ ᱢᱮᱯ ᱨᱮ ᱵᱟᱹᱱᱩᱜ-ᱟ (ᱴᱷᱟᱶ ᱵᱟᱹᱱᱩᱜ-ᱟ)",
+    "truncated": "{total} ᱠᱷᱚᱱ ᱯᱩᱭᱞᱩ {count} ᱩᱫᱩᱜ ᱠᱟᱱᱟ, ᱵᱟᱹᱲᱛᱤ ᱧᱮᱞ ᱞᱟᱹᱜᱤᱫ ᱡᱩᱢ ᱢᱮ",
+    "newBadge": "ᱱᱟᱶᱟ",
+    "newToast": "{count} ᱜᱚᱴᱟᱝ ᱱᱟᱶᱟ ᱫᱟᱵᱤ ᱥᱮᱞᱮᱫ ᱮᱱᱟ",
+    "flyTo": "ᱧᱮᱞ ᱢᱮ",
+    "claimedBoundaryNote": "ᱥᱤᱢᱟᱹ ᱫᱚ ᱟᱨᱫᱟᱥᱤᱭᱟᱹ ᱠᱚ ᱦᱚᱛᱮᱛᱮ ᱫᱟᱵᱤ ᱟᱠᱟᱱᱟ ᱟᱨ ᱵᱟᱝ ᱥᱟᱨᱵᱷᱮ ᱟᱠᱟᱱᱟ; 'ᱯᱚᱨᱠᱷᱟᱣ' ᱢᱮᱱᱮᱛ ᱫᱚ ᱚᱯᱷᱤᱥᱟᱨ ᱢᱮᱯ ᱨᱮ ᱴᱷᱟᱶ ᱮ ᱯᱩᱥᱴᱟᱹᱣ ᱟᱠᱟᱫᱟ ᱾",
+    "verifiedOnMap": "{date} ᱨᱮ {officer} ᱦᱚᱛᱮᱛᱮ ᱢᱮᱯ ᱨᱮ ᱯᱚᱨᱠᱷᱟᱣ ᱟᱠᱟᱱᱟ",
+    "claimedBoundary": "ᱫᱟᱵᱤ ᱥᱤᱢᱟᱹ (ᱵᱟᱝ ᱯᱚᱨᱠᱷᱟᱣ)",
+    "occupationSince": "ᱫᱚᱠᱷᱚᱞ ᱮᱛᱚᱦᱚᱵ ᱥᱮᱨᱢᱟ",
+    "grantedOn": "ᱢᱚᱧᱡᱩᱨ ᱢᱟᱹᱦᱤᱛ",
+    "recentActivity": "ᱱᱤᱛᱚᱜᱟᱜ ᱠᱟᱹᱢᱤᱦᱚᱨᱟ",
+    "proofs": "ᱥᱟᱹᱠᱷᱤ ᱠᱟᱜᱚᱡᱽ",
+    "checklist": "ᱨᱩᱞ ᱑᱓ ᱪᱮᱠᱞᱤᱥᱴ ᱥᱟᱨᱟᱝᱥ",
+    "openFullReview": "ᱯᱩᱨᱟᱹ ᱯᱚᱨᱠᱷᱟᱣ ᱡᱷᱤᱡ ᱢᱮ",
+    "loading": "ᱮᱴᱞᱟᱥ ᱰᱟᱴᱟ ᱞᱚᱰᱚᱜ ᱠᱟᱱᱟ…",
+    "loadingDetail": "ᱫᱟᱵᱤ ᱵᱤᱵᱨᱚᱬ ᱞᱚᱰᱚᱜ ᱠᱟᱱᱟ…",
+    "loadError": "ᱮᱴᱞᱟᱥ ᱰᱟᱴᱟ ᱵᱟᱝ ᱞᱚᱰ ᱞᱮᱱᱟ ᱾",
+    "loadDetailError": "ᱫᱟᱵᱤ ᱵᱤᱵᱨᱚᱬ ᱵᱟᱝ ᱞᱚᱰ ᱞᱮᱱᱟ ᱾",
+    "noProofAvailable": "ᱡᱟᱦᱟᱸᱱ ᱥᱟᱹᱠᱷᱤ ᱠᱟᱜᱚᱡᱽ ᱵᱟᱹᱱᱩᱜ-ᱟ ᱾",
+    "unclassified": "ᱵᱟᱝ ᱦᱟᱹᱴᱤᱧ ᱟᱠᱟᱱ",
+    "status": {
+      "submitted": "ᱮᱢ ᱟᱠᱟᱱ",
+      "underReview": "ᱯᱚᱨᱠᱷᱟᱣ ᱨᱮ",
+      "escalated": "ᱰᱤ.ᱮᱞ.ᱥᱤ. ᱠᱩᱞ ᱮᱱᱟ",
+      "appealed": "ᱟᱯᱤᱞ ᱟᱠᱟᱱ",
+      "approved": "ᱢᱚᱧᱡᱩᱨ ᱮᱱᱟ",
+      "rejected": "ᱵᱟᱛᱤᱞ ᱮᱱᱟ",
+      "disputed": "ᱵᱤᱵᱟᱹᱫᱽ ᱟᱠᱟᱱ"
+    },
+    "legend": {
+      "title": "ᱪᱤᱱᱦᱟᱹ ᱩᱫᱩᱜ",
+      "submitted": "ᱮᱢ ᱟᱠᱟᱱ / ᱯᱚᱨᱠᱷᱟᱣ ᱨᱮ",
+      "escalated": "ᱰᱤ.ᱮᱞ.ᱥᱤ. ᱠᱩᱞ ᱮᱱᱟ",
+      "appealed": "ᱟᱯᱤᱞ ᱟᱠᱟᱱ",
+      "approved": "ᱢᱚᱧᱡᱩᱨ ᱮᱱᱟ",
+      "rejected": "ᱵᱟᱛᱤᱞ ᱮᱱᱟ",
+      "conflict": "ᱵᱤᱵᱟᱹᱫᱽ ᱦᱟᱞᱚᱛ"
+    },
+    "noMatch": "ᱱᱚᱶᱟ ᱪᱷᱟᱹᱱᱤ ᱞᱮᱠᱟᱛᱮ ᱪᱮᱫ ᱫᱟᱵᱤ ᱦᱚᱸ ᱵᱟᱹᱱᱩᱜᱼᱟ",
+    "clearFilters": "ᱪᱷᱟᱹᱱᱤ ᱯᱷᱟᱨᱪᱟᱭ ᱢᱮ",
+    "unfilteredCount": "ᱪᱷᱟᱹᱱᱤ ᱵᱮᱜᱚᱨ {count} ᱜᱚᱴᱟᱝ ᱫᱟᱵᱤ ᱢᱮᱱᱟᱜᱼᱟ"
   }
 }

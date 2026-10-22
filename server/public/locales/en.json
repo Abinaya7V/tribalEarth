@@ -247,5 +247,95 @@
     "groundsLabel": "Grounds for Appeal",
     "groundsPlaceholder": "Explain why the claim should not have been rejected...",
     "submitBtn": "Submit Appeal"
+  },
+  "conflict": {
+    "banner": {
+      "title": "Competing Claim(s) Detected",
+      "competing": "This claim has open competing conflicts. Approval is locked until all conflicts are resolved.",
+      "duplicate": "Possible Duplicate Claim (Same Applicant)"
+    },
+    "badge": "conflict(s)",
+    "duplicate": {
+      "label": "Duplicate proof",
+      "desc": "Another claim by this applicant shares boundaries or proof documents. Advisory only — does not block approval."
+    },
+    "resolve": {
+      "finding": {
+        "title": "Determination finding",
+        "boundaries_do_not_conflict": "Boundaries do not conflict",
+        "shared_use_accepted": "Shared use accepted",
+        "this_claim_has_stronger_evidence": "This claim has stronger evidence"
+      },
+      "reason": "Written reason (min 10 characters)",
+      "reasonPlaceholder": "Enter justification for this resolution...",
+      "submit": "Resolve Conflict",
+      "resolvedHeader": "Resolved Conflicts"
+    },
+    "approve": {
+      "blocked": "All competing claim conflicts must be resolved before this claim can be approved."
+    },
+    "applicantNoticeTitle": "Verification in Progress",
+    "applicantNotice": "Your claim is currently undergoing standard boundary and document verification by officials.",
+    "notCheckable": "Not checkable (no coordinates)",
+    "reasons": {
+      "overlap": "Spatial Overlap",
+      "duplicateProof": "Duplicate Proof"
+    }
+  },
+  "filing": {
+    "locationRequired": "Location is mandatory: please drop a pin or draw a boundary on the map.",
+    "occupationSinceYear": "Occupation since (Year)",
+    "occupationSinceYearHint": "e.g. 1998 (between 1900 and current year)",
+    "occupationSinceYearPlaceholder": "e.g. 1998"
+  },
+  "atlas": {
+    "tab": "Atlas",
+    "filterVillage": "All villages",
+    "filterStatus": "All statuses",
+    "filterClaimType": "All claim types",
+    "filterDisputed": "Disputed only",
+    "refresh": "Refresh",
+    "lastUpdated": "Last updated",
+    "notMappedCount": "{count} claims not mapped (no coordinates)",
+    "truncated": "Showing first {count} of {total}, zoom in to see more",
+    "newBadge": "New",
+    "newToast": "{count} new claim(s) added",
+    "flyTo": "View",
+    "claimedBoundaryNote": "Boundaries are claimed by applicants and not surveyed; 'verified' means an officer checked the location on the map.",
+    "verifiedOnMap": "Verified on map by {officer} on {date}",
+    "claimedBoundary": "Claimed boundary (unverified)",
+    "occupationSince": "Occupation since",
+    "grantedOn": "Granted on",
+    "recentActivity": "Recent Activity",
+    "proofs": "Proofs",
+    "checklist": "Rule 13 Checklist Summary",
+    "openFullReview": "Open full review",
+    "loading": "Loading Atlas data…",
+    "loadingDetail": "Loading claim details…",
+    "loadError": "Could not load Atlas data.",
+    "loadDetailError": "Could not load claim details.",
+    "noProofAvailable": "No proof documents attached.",
+    "unclassified": "Unclassified",
+    "status": {
+      "submitted": "Submitted",
+      "underReview": "Under Review",
+      "escalated": "Escalated to DLC",
+      "appealed": "Appealed",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "disputed": "Disputed"
+    },
+    "legend": {
+      "title": "Legend",
+      "submitted": "Submitted / Under Review",
+      "escalated": "Escalated to DLC",
+      "appealed": "Appealed",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "conflict": "Open Conflict (Disputed)"
+    },
+    "noMatch": "No claims match these filters",
+    "clearFilters": "Clear filters",
+    "unfilteredCount": "{count} claims exist without these filters"
   }
 }

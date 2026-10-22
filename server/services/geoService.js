@@ -50,12 +50,39 @@ function computeAreaHa(geoJsonGeom) {
   return sqMeters / 10000;
 }
 
+function claimsOverlap(a, b) {
+  if (!a || !b) return false;
+  if (!a.geometry && !a.location) return false;
+  if (!b.geometry && !b.location) return false;
+
+  try {
+    if (a.geometry && b.geometry) {
+      return booleanIntersects(polygon(a.geometry.coordinates), polygon(b.geometry.coordinates));
+    } else if (a.location && b.location && !a.geometry && !b.geometry) {
+      const d = turfDistance(
+        point([a.location.lng, a.location.lat]),
+        point([b.location.lng, b.location.lat]),
+        { units: "meters" }
+      );
+      return d < 50;
+    } else if (a.geometry && b.location) {
+      const pt = point([b.location.lng, b.location.lat]);
+      return booleanPointInPolygon(pt, polygon(a.geometry.coordinates));
+    } else if (a.location && b.geometry) {
+      const pt = point([a.location.lng, a.location.lat]);
+      return booleanPointInPolygon(pt, polygon(b.geometry.coordinates));
+    }
+  } catch (e) {
+    return false;
+  }
+  return false;
+}
+
 function computeFlags(claim, allClaims) {
   const flags = [];
   
   // 1. OUTSIDE_VILLAGE_REGION
-  // We do not have reliable reference data for village boundaries in this task.
-  // Flag skipped with a note in our config/logic that reference data is missing.
+  // Skipped (reference data not available)
 
   // 2. NO_BOUNDARY
   if (!claim.geometry && claim.location) {
@@ -75,43 +102,14 @@ function computeFlags(claim, allClaims) {
     });
   }
 
-  // 4. AREA_MISMATCH
-  if (claim.computedAreaHa && claim.landDescription) {
-    // Attempt to extract declared area from text
-    // E.g., "3.5 hectares" or "2 acres". Just a basic fallback check if possible.
-    // If not parseable, we skip. Since we don't have a strict 'declaredArea' field,
-    // we can parse `landDescription` for numbers followed by ha, hectare, etc.
-    // For now, if we cannot parse it reliably, we won't throw AREA_MISMATCH,
-    // unless there is a specific field. Let's assume there is no structured field yet.
-    // Wait, the applicant form might not have a structured area. But we can check if they provided it.
-    // Let's rely on standard fields or just skip it gracefully.
-  }
+  // 4. AREA_MISMATCH (not implemented without structured declaredArea)
 
   // 5. OVERLAPS_OTHER_CLAIM
   let overlaps = 0;
   if (claim.geometry || claim.location) {
     for (const other of allClaims) {
       if (other.claimId === claim.claimId) continue;
-      if (!other.geometry && !other.location) continue;
-
-      let isOverlapping = false;
-      if (claim.geometry && other.geometry) {
-        try {
-          isOverlapping = booleanIntersects(polygon(claim.geometry.coordinates), polygon(other.geometry.coordinates));
-        } catch(e) {}
-      } else if (claim.location && other.location && !claim.geometry && !other.geometry) {
-        // Both are points
-        const d = turfDistance(point([claim.location.lng, claim.location.lat]), point([other.location.lng, other.location.lat]), { units: 'meters' });
-        if (d < 50) isOverlapping = true;
-      } else if (claim.geometry && other.location) {
-        const pt = point([other.location.lng, other.location.lat]);
-        isOverlapping = booleanPointInPolygon(pt, polygon(claim.geometry.coordinates));
-      } else if (claim.location && other.geometry) {
-        const pt = point([claim.location.lng, claim.location.lat]);
-        isOverlapping = booleanPointInPolygon(pt, polygon(other.geometry.coordinates));
-      }
-
-      if (isOverlapping) overlaps++;
+      if (claimsOverlap(claim, other)) overlaps++;
     }
   }
 
@@ -130,5 +128,7 @@ module.exports = {
   isPointInIndia,
   validatePolygon,
   computeAreaHa,
+  claimsOverlap,
   computeFlags
 };
+

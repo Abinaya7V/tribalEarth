@@ -2,3 +2,6 @@
 require("./api.test.js");
 require("./db.test.js");
 require("./geo.test.js");
+require("./conflict.test.js");
+require("./atlas.test.js");
+

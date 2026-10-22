@@ -20,7 +20,6 @@ const fs = require("fs");
 const path = require("path");
 
 const DEFAULT_DATA_DIR = path.join(__dirname, "..", "data");
-const DEFAULT_DB_PATH = path.join(DEFAULT_DATA_DIR, "tribalearth.db");
 
 let dbInstance = null;
 let currentDbPath = null;
@@ -34,7 +33,9 @@ const snapshots = new WeakMap();
  * and performs one-time migration from claims.json if needed.
  */
 function initDb(customDbPath = null) {
-  const dbPath = customDbPath || process.env.DB_PATH || DEFAULT_DB_PATH;
+  const effectiveDataDir = process.env.DATA_DIR || DEFAULT_DATA_DIR;
+  const defaultDbPath = path.join(effectiveDataDir, "tribalearth.db");
+  const dbPath = customDbPath || process.env.DB_PATH || defaultDbPath;
   const dataDir = path.dirname(dbPath);
 
   if (!fs.existsSync(dataDir)) {

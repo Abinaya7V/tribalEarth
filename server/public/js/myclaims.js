@@ -279,6 +279,13 @@
           <p>${plainStatus.desc}</p>
         </div>
 
+        ${c.conflictNotice ? `
+          <div class="conflict-applicant-notice" style="background:#fefce8; border:1px solid #fef08a; border-left:4px solid #ca8a04; border-radius:4px; padding:12px 14px; margin-bottom:16px;">
+            <div style="font-weight:600; color:#854d0e; margin-bottom:4px;">${window.t("conflict.applicantNoticeTitle", "Verification in Progress")}</div>
+            <div style="font-size:13px; color:#713f12;">${window.t("conflict.applicantNotice", "Your claim is currently undergoing standard boundary and document verification by officials.")}</div>
+          </div>
+        ` : ""}
+
         ${rejectionHtml}
         ${priorRejectionHtml}
         ${appealHtml}

@@ -49,9 +49,25 @@ const DEMO_USERS = [
       "2b49c528e93278ecff0360bdc3053142:76bea95e372542dc7633f5a8bdf12f827e44e7c8a63a5530e60d5572fa0b69797df5a6f1e29d3da45df31e7e0ccebd3f791c3804138a312cb08e9062011508de",
   },
   {
+    username: "applicant2",
+    role: "applicant",
+    displayName: "Demo Applicant 2",
+    passwordHash:
+      "4546e40465b022870ef1a827f5f71c8d:9bd30ac6a636e0338e00a9ffe61ebd4f8efda11c11e7ae4c9e67391e5d0fd5f5ba8291a719c964dbc03d4388d0d76c94d8eafc454a1b00f8f9f1ab2d14042673",
+  },
+  {
+    username: "applicant3",
+    role: "applicant",
+    displayName: "Demo Applicant 3",
+    passwordHash:
+      "e937ed5f77c593c7a2859a9246d844f4:7333ac64d1e46a56bce9a07282e63477315023141deca2261346752f2b4d59183a93d9ebde88fdc2ad9445982cd60f2a147b5ecd38ee5129a85b811d36cafc88",
+  },
+  {
     username: "gramsabha1",
     role: "gram_sabha",
     displayName: "Gram Sabha Officer",
+    // Demo simplification: null means all jurisdictions. In production this would be set to a specific state/district.
+    jurisdiction: { state: null, district: null },
     passwordHash:
       "e15fc53618bde3b38158d2e81abd6044:25f31bc786ed12108facb263897e3fde717f78fba169795147e6a021752538c3d1d3d3a8f9b00e454ce943e32b67ac2125ab553ae4a455b84b641a99f6e6ccd5",
   },
@@ -59,6 +75,8 @@ const DEMO_USERS = [
     username: "sdlc1",
     role: "sdlc",
     displayName: "SDLC Officer",
+    // Demo simplification: null means all jurisdictions.
+    jurisdiction: { state: null, district: null },
     passwordHash:
       "56f78a1b6ffdc02b2c80beddf964f8d4:fd5d6923508896cea221adcd78875cddaae124db7d5ba3e39ee9978e29374e7a55794e14ba1bae0cb46bd3d2b65ce714c4d34cc11b7d67025e3791533196bbd2",
   },
@@ -66,6 +84,8 @@ const DEMO_USERS = [
     username: "dlc1",
     role: "dlc",
     displayName: "DLC Officer",
+    // Demo simplification: null means all jurisdictions.
+    jurisdiction: { state: null, district: null },
     passwordHash:
       "8575acb9eb3c4f54ae21f0597489dce7:af2d18206daf0fe5c92a8577dfdb2d15a5d0cf7272a99c85cc056894e4c6bf76d3a6507a4ff987c523b877248b34e68bc276998c67c65e60b3115cd19c6c90d7",
   },
@@ -95,9 +115,10 @@ function login(username, password) {
     username: user.username,
     role: user.role,
     displayName: user.displayName,
+    jurisdiction: user.jurisdiction || null,
     createdAt: Date.now(),
   });
-  return { token, role: user.role, displayName: user.displayName };
+  return { token, role: user.role, displayName: user.displayName, jurisdiction: user.jurisdiction || null };
 }
 
 function logout(token) {

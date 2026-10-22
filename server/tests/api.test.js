@@ -49,7 +49,9 @@ test("4. Rejection without a written reason is refused at the API", async () => 
     .field("village", "Test Vill")
     .field("district", "Test Dist")
     .field("state", "Test State")
-    .field("claimType", "IFR");
+    .field("claimType", "IFR")
+    .field("latitude", "20.27")
+    .field("longitude", "81.49");
   
   assert.strictEqual(createRes.status, 201);
   claimId = createRes.body.claim.claimId;
@@ -89,7 +91,9 @@ test("6. Map-check: officer at claim's stage can save map check (200), wrong-sta
     .field("village", "Map Village")
     .field("district", "Map District")
     .field("state", "Map State")
-    .field("claimType", "IFR");
+    .field("claimType", "IFR")
+    .field("latitude", "20.27")
+    .field("longitude", "81.49");
   
   assert.strictEqual(createRes.status, 201);
   const testClaimId = createRes.body.claim.claimId;
@@ -124,7 +128,9 @@ test("7. Regression: PATCH /api/claims/:id/advance is disabled; anonymous and ap
     .field("village", "Advance Village")
     .field("district", "Advance District")
     .field("state", "Advance State")
-    .field("claimType", "IFR");
+    .field("claimType", "IFR")
+    .field("latitude", "20.27")
+    .field("longitude", "81.49");
 
   assert.strictEqual(createRes.status, 201);
   const testClaimId = createRes.body.claim.claimId;
