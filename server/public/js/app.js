@@ -7,31 +7,16 @@ const API_BASE = "/api";
 
 /* ---------------- tabs ---------------- */
 const tabBtns = document.querySelectorAll(".tab-btn");
-const tabPanels = document.querySelectorAll(".tab-panel");
 
 tabBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
-    tabBtns.forEach((b) => {
-      b.classList.remove("is-active");
-      b.setAttribute("aria-selected", "false");
-    });
-    btn.classList.add("is-active");
-    btn.setAttribute("aria-selected", "true");
-
-    const isOfficer = window.Auth && window.Auth.hasRole("gram_sabha", "sdlc", "dlc");
-    if (btn.style.display === "none" || btn.hidden) return;
-    if (isOfficer && (target === "file" || target === "register" || target === "myclaims")) return;
-
     const target = btn.dataset.tab;
-    tabPanels.forEach((p) => p.classList.remove("is-active"));
-    const activePanel = document.getElementById(`tab-${target}`);
-    if (activePanel) activePanel.classList.add("is-active");
-
-    if (target === "register" && !isOfficer) loadClaims();
-    if (target === "myclaims" && typeof window.loadMyClaims === "function") window.loadMyClaims();
-    if (target === "atlas" && window.Atlas && typeof window.Atlas.onTabActive === "function") window.Atlas.onTabActive();
+    if (typeof window.switchTab === "function") {
+      window.switchTab(target);
+    }
   });
 });
+
 
 /* ---------------- multi-step form ---------------- */
 const TOTAL_STEPS = 4;
@@ -283,7 +268,9 @@ claimForm.addEventListener("submit", async (e) => {
 
     // jump to My Claims to show the freshly filed claim
     setTimeout(() => {
-      document.querySelector('.tab-btn[data-tab="myclaims"]').click();
+      if (typeof window.switchTab === "function") {
+        window.switchTab("myclaims");
+      }
     }, 900);
   } catch (err) {
     formMsg.textContent = err.message;

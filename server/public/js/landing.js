@@ -68,18 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (window.Auth && typeof window.Auth.syncSession === 'function') {
           window.Auth.syncSession();
         } else {
-          // If syncSession is not exposed, just reload to let auth.js pick it up, 
-          // or we can dispatch a custom event
           window.dispatchEvent(new CustomEvent('sessionChanged'));
         }
-
-        // Navigate to the correct tab based on role
-        if (data.role === 'applicant') {
-          document.querySelector('.tab-btn[data-tab="myclaims"]')?.click();
-        } else {
-          document.querySelector('.tab-btn[data-tab="officials"]')?.click();
-        }
-
       } catch (err) {
         landingLoginError.textContent = "Could not reach the server. Please try again.";
         landingLoginError.hidden = false;

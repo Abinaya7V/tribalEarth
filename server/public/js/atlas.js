@@ -333,33 +333,6 @@
     updatePermanentTooltips();
   }
 
-  async function checkZeroResultsOverlay(featuresCount) {
-    const overlay = document.getElementById("atlasNoResultsOverlay");
-    const subtitle = document.getElementById("atlasNoResultsSubtitle");
-    if (!overlay) return;
-
-    if (featuresCount === 0) {
-      try {
-        const res = await window.Auth.authFetch(`${API_BASE}/atlas/summary`);
-        if (res.ok) {
-          const summary = await res.json();
-          const totalUnfiltered = summary.totalMapped || 0;
-          if (subtitle) {
-            subtitle.textContent = window.t(
-              "atlas.unfilteredCount",
-              "{count} claims exist without these filters"
-            ).replace("{count}", totalUnfiltered);
-          }
-        }
-      } catch (e) {
-        if (subtitle) subtitle.textContent = "";
-      }
-      overlay.hidden = false;
-    } else {
-      overlay.hidden = true;
-    }
-  }
-
   function renderFeatures(data, isBackgroundPoll) {
     if (!featuresLayer) return;
 
@@ -407,8 +380,6 @@
     if (isFirstLoad) {
       isFirstLoad = false;
     }
-
-    checkZeroResultsOverlay((data.features || []).length);
 
     // Truncated chip
     const truncatedEl = document.getElementById("atlasTruncatedMsg");
@@ -643,8 +614,9 @@
           if (window.officials && typeof window.officials.openReviewDrawer === "function") {
             window.officials.openReviewDrawer(claim.claimId);
           } else {
-            const officialsTabBtn = document.querySelector('.tab-btn[data-tab="officials"]');
-            if (officialsTabBtn) officialsTabBtn.click();
+            if (typeof window.switchTab === "function") {
+              window.switchTab("officials");
+            }
           }
         };
       } else {
@@ -749,16 +721,6 @@
       disputedToggle.addEventListener("change", onFilterChange);
     }
 
-    // Clear filters button in zero results overlay
-    const clearFiltersBtn = document.getElementById("atlasClearFiltersBtn");
-    if (clearFiltersBtn) {
-      clearFiltersBtn.addEventListener("click", () => {
-        resetFilters();
-        closePanel();
-        fetchViewportFeatures();
-      });
-    }
-
     // Refresh button
     const refreshBtn = document.getElementById("atlasRefreshBtn");
     if (refreshBtn) {
@@ -809,6 +771,13 @@
     }
   }
 
+  function stopPolling() {
+    if (pollIntervalId) {
+      clearInterval(pollIntervalId);
+      pollIntervalId = null;
+    }
+  }
+
   // Public module API
   window.Atlas = {
     onTabActive: function () {
@@ -824,6 +793,10 @@
       fetchViewportFeatures();
       setupPolling();
     },
+    onTabInactive: function () {
+      stopPolling();
+    },
+    stopPolling: stopPolling,
     openClaimDetail: openClaimDetail,
   };
 

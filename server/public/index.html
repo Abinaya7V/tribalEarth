@@ -148,19 +148,16 @@
         </div>
       </div>
       <nav class="tab-nav" role="tablist" aria-label="Primary">
-        <button class="tab-btn is-active" data-tab="file" role="tab" aria-selected="true">
+        <button class="tab-btn" data-tab="file" role="tab" aria-selected="false">
           <span class="tab-index"></span> <span data-i18n="header.nav.file">File a Claim</span>
         </button>
-        <button class="tab-btn" data-tab="register" role="tab" aria-selected="false">
-          <span class="tab-index"></span> <span data-i18n="header.nav.register">Claims Register</span>
-        </button>
-        <button class="tab-btn" data-tab="myclaims" role="tab" aria-selected="false" hidden>
+        <button class="tab-btn" data-tab="myclaims" role="tab" aria-selected="false">
           <span class="tab-index"></span> <span data-i18n="header.nav.myclaims">My Claims</span>
         </button>
         <button class="tab-btn" data-tab="officials" role="tab" aria-selected="false">
           <span class="tab-index"></span> Officials Review
         </button>
-        <button class="tab-btn" data-tab="atlas" role="tab" aria-selected="false" style="display:none;">
+        <button class="tab-btn" data-tab="atlas" role="tab" aria-selected="false">
           <span class="tab-index"></span> <span data-i18n="atlas.tab">Atlas</span>
         </button>
       </nav>
@@ -427,53 +424,6 @@
         </div>
       </section>
 
-      <!-- ============ TAB: CLAIMS REGISTER ============ -->
-      <section id="tab-register" class="tab-panel">
-        <div class="register-toolbar">
-          <div class="register-search">
-            <input type="search" id="searchInput" placeholder="Search by name, village, or claim ID…"
-              data-i18n-placeholder="register.search">
-          </div>
-          <div class="register-filters">
-            <select id="filterType">
-              <option value="" data-i18n="register.filterTypeAll">All claim types</option>
-              <option value="IFR">IFR</option>
-              <option value="CR">CR</option>
-              <option value="CFR">CFR</option>
-            </select>
-            <select id="filterStage">
-              <option value="" data-i18n="register.filterStageAll">All stages</option>
-              <option value="Gram Sabha">Gram Sabha</option>
-              <option value="SDLC">SDLC</option>
-              <option value="DLC">DLC</option>
-            </select>
-            <button id="refreshBtn" class="btn btn-ghost btn-sm" data-i18n="register.refresh">Refresh</button>
-          </div>
-        </div>
-
-        <div class="stats-strip" id="statsStrip"></div>
-
-        <div class="ledger-wrap">
-          <table class="ledger" id="ledgerTable">
-            <thead>
-              <tr>
-                <th data-i18n="register.table.id">Claim ID</th>
-                <th data-i18n="register.table.applicant">Applicant</th>
-                <th data-i18n="register.table.village">Village</th>
-                <th data-i18n="register.table.type">Type</th>
-                <th data-i18n="register.table.stage">Stage</th>
-                <th data-i18n="register.table.date">Filed on</th>
-              </tr>
-            </thead>
-            <tbody id="ledgerBody">
-              <tr class="ledger-empty">
-                <td colspan="6" data-i18n="register.loading">Loading claims…</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       <!-- ============ TAB: MY CLAIMS ============ -->
       <section id="tab-myclaims" class="tab-panel">
         <div class="myclaims-header">
@@ -581,14 +531,6 @@
           <div class="atlas-layout">
             <div class="atlas-map-wrapper">
               <div id="atlasMap" class="atlas-map"></div>
-              <!-- Zero results overlay -->
-              <div id="atlasNoResultsOverlay" class="atlas-no-results-overlay" hidden>
-                <div class="atlas-no-results-card">
-                  <p id="atlasNoResultsTitle" class="atlas-no-results-title" data-i18n="atlas.noMatch">No claims match these filters</p>
-                  <p id="atlasNoResultsSubtitle" class="atlas-no-results-subtitle"></p>
-                  <button type="button" id="atlasClearFiltersBtn" class="btn btn-primary btn-sm" data-i18n="atlas.clearFilters">Clear filters</button>
-                </div>
-              </div>
               <!-- Persistent boundary disclaimer -->
               <div class="atlas-map-disclaimer" data-i18n="atlas.claimedBoundaryNote">
                 Boundaries are claimed by applicants and not surveyed; 'verified' means an officer checked the location on the map.

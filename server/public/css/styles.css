@@ -1707,45 +1707,6 @@ button[disabled].btn-disabled-conflict {
   height: 100%;
 }
 
-.atlas-no-results-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1001;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(2px);
-  padding: 16px;
-}
-
-.atlas-no-results-card {
-  background: var(--surface, #ffffff);
-  border-radius: 8px;
-  padding: 24px 28px;
-  max-width: 380px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border-color, #e2e8f0);
-}
-
-.atlas-no-results-title {
-  font-weight: 600;
-  font-size: 16px;
-  color: var(--ink, #1e293b);
-  margin: 0 0 8px 0;
-}
-
-.atlas-no-results-subtitle {
-  font-size: 13px;
-  color: var(--ink-soft, #64748b);
-  margin: 0 0 16px 0;
-}
-
 .atlas-map-disclaimer {
   position: absolute;
   bottom: 8px;

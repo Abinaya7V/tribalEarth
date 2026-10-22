@@ -68,25 +68,6 @@
     dlc: "DLC Officer",
   };
 
-  function updateTabNumbers() {
-    const allTabBtns = Array.from(document.querySelectorAll(".tab-nav .tab-btn"));
-    let counter = 1;
-    allTabBtns.forEach((btn) => {
-      const isVisible = btn.style.display !== "none" && !btn.hidden;
-      const indexSpan = btn.querySelector(".tab-index");
-      if (isVisible) {
-        if (indexSpan) {
-          indexSpan.textContent = String(counter).padStart(2, "0");
-        }
-        counter++;
-      } else {
-        if (indexSpan) {
-          indexSpan.textContent = "";
-        }
-      }
-    });
-  }
-
   function renderHeader() {
     const label = document.getElementById("sessionLabel");
     const loginBtn = document.getElementById("loginBtn");
@@ -94,30 +75,24 @@
     if (!label || !loginBtn || !logoutBtn) return;
 
     const session = getSession();
-    const appContainer = document.getElementById("appContainer");
-    const landingContainer = document.getElementById("landingContainer");
 
     if (session) {
       label.hidden = false;
       const roleLabel = ROLE_LABELS[session.role] || session.role;
-      // Show role label and display name only when they differ; otherwise show once
-      if (session.displayName && session.displayName.trim().toLowerCase() !== roleLabel.trim().toLowerCase()) {
-        label.textContent = `${session.displayName} · ${roleLabel}`;
-      } else {
-        label.textContent = roleLabel;
-      }
+      // Show role label only once:
+      label.textContent = roleLabel;
       loginBtn.hidden = true;
       logoutBtn.hidden = false;
-      
+
       applyAuthView(session);
-      applyRoleVisibility(session ? session.role : null);
+      renderTabsForRole(session.role);
     } else {
       label.hidden = true;
       loginBtn.hidden = false;
       logoutBtn.hidden = true;
-      
-      applyAuthView(session);
-      applyRoleVisibility(session ? session.role : null);
+
+      applyAuthView(null);
+      renderTabsForRole(null);
     }
   }
 
@@ -128,7 +103,7 @@
     if (session) {
       if (appContainer) {
         appContainer.hidden = false;
-        appContainer.style.display = ""; // Let CSS take over
+        appContainer.style.display = "";
       }
       if (landingContainer) {
         landingContainer.hidden = true;
@@ -141,92 +116,125 @@
       }
       if (landingContainer) {
         landingContainer.hidden = false;
-        landingContainer.style.display = ""; // Let CSS take over
+        landingContainer.style.display = "";
       }
     }
   }
 
-  function applyRoleVisibility(role) {
-    const tabFile = document.querySelector('.tab-btn[data-tab="file"]');
-    const tabRegister = document.querySelector('.tab-btn[data-tab="register"]');
-    const tabOfficials = document.querySelector('.tab-btn[data-tab="officials"]');
-    const tabMyClaims = document.querySelector('.tab-btn[data-tab="myclaims"]');
-    const tabAtlas = document.querySelector('.tab-btn[data-tab="atlas"]');
+  /* ---------------- role-based tabs config & single source of truth ---------------- */
+  const ROLE_TABS = {
+    applicant:  ["file", "myclaims"],
+    gram_sabha: ["officials", "atlas"],
+    sdlc:       ["officials", "atlas"],
+    dlc:        ["officials", "atlas"],
+  };
 
-    const panelFile = document.getElementById("tab-file");
-    const panelRegister = document.getElementById("tab-register");
-    const panelOfficials = document.getElementById("tab-officials");
-    const panelMyClaims = document.getElementById("tab-myclaims");
-    const panelAtlas = document.getElementById("tab-atlas");
-    
-    if (!tabFile || !tabRegister || !tabOfficials) return;
+  const DEFAULT_TAB = {
+    applicant:  "file",
+    gram_sabha: "officials",
+    sdlc:       "officials",
+    dlc:        "officials",
+  };
 
-    if (!role || role === 'applicant') {
-      // Applicant sees: File a Claim, Claims Register, My Claims
-      tabFile.style.display = '';
-      tabFile.hidden = false;
-      tabRegister.style.display = '';
-      tabRegister.hidden = false;
-      if (tabMyClaims) {
-        tabMyClaims.style.display = '';
-        tabMyClaims.hidden = false;
-      }
-      tabOfficials.style.display = 'none';
-      tabOfficials.hidden = true;
-      if (tabAtlas) {
-        tabAtlas.style.display = 'none';
-        tabAtlas.hidden = true;
-      }
+  let currentActiveTabId = null;
 
-      // Hide officer panels completely
-      if (panelOfficials) panelOfficials.hidden = true;
-      if (panelAtlas) panelAtlas.hidden = true;
-      if (panelFile) panelFile.hidden = false;
-      if (panelRegister) panelRegister.hidden = false;
-      if (panelMyClaims) panelMyClaims.hidden = false;
-    } else {
-      // Officer roles (gram_sabha, sdlc, dlc): Officials Review, Atlas ONLY
-      // Claims Register, File a Claim, and My Claims must NOT be visible to officers
-      tabFile.style.display = 'none';
-      tabFile.hidden = true;
-      tabRegister.style.display = 'none';
-      tabRegister.hidden = true;
-      if (tabMyClaims) {
-        tabMyClaims.style.display = 'none';
-        tabMyClaims.hidden = true;
-      }
-      tabOfficials.style.display = '';
-      tabOfficials.hidden = false;
-      if (tabAtlas) {
-        tabAtlas.style.display = '';
-        tabAtlas.hidden = false;
-      }
+  function renderTabsForRole(role) {
+    const effectiveRole = role || "applicant";
+    const allowedTabs = ROLE_TABS[effectiveRole] || ROLE_TABS.applicant;
+    const allTabBtns = Array.from(document.querySelectorAll(".tab-nav .tab-btn"));
+    const allPanels = Array.from(document.querySelectorAll(".tab-panel"));
 
-      // Hide applicant panels completely
-      if (panelFile) panelFile.hidden = true;
-      if (panelRegister) panelRegister.hidden = true;
-      if (panelMyClaims) panelMyClaims.hidden = true;
-      if (panelOfficials) panelOfficials.hidden = false;
-      if (panelAtlas) panelAtlas.hidden = false;
+    // 1. Show only allowed tabs, hide all others
+    allTabBtns.forEach((btn) => {
+      const tabId = btn.dataset.tab;
+      const isAllowed = allowedTabs.includes(tabId);
+      btn.hidden = !isAllowed;
+      btn.style.display = isAllowed ? "" : "none";
+    });
+
+    // 2. Compute 01, 02, 03 numbers strictly for visible tabs in DOM order
+    let counter = 1;
+    allTabBtns.forEach((btn) => {
+      if (!btn.hidden && btn.style.display !== "none") {
+        const indexSpan = btn.querySelector(".tab-index");
+        if (indexSpan) {
+          indexSpan.textContent = String(counter).padStart(2, "0");
+        }
+        counter++;
+      }
+    });
+
+    // 3. Hide all panels completely first (both attribute and active class)
+    allPanels.forEach((p) => {
+      p.classList.remove("is-active");
+      p.hidden = true;
+    });
+
+    // 4. Determine default or valid active tab
+    const defaultTab = DEFAULT_TAB[effectiveRole] || "file";
+    const targetTab = allowedTabs.includes(currentActiveTabId) ? currentActiveTabId : defaultTab;
+
+    switchTab(targetTab);
+  }
+
+  function switchTab(tabId) {
+    const session = getSession();
+    const effectiveRole = session?.role || "applicant";
+    const allowedTabs = ROLE_TABS[effectiveRole] || ROLE_TABS.applicant;
+
+    // Refuse tabs not allowed for the current role; fall back to default
+    if (!allowedTabs.includes(tabId)) {
+      tabId = DEFAULT_TAB[effectiveRole] || "file";
     }
 
-    // Dynamic numbering of visible tabs (01, 02, ...)
-    updateTabNumbers();
+    const previousTabId = currentActiveTabId;
+    currentActiveTabId = tabId;
 
-    // Default tab selection per role:
-    // Officers -> Officials Review
-    // Applicants -> File a Claim (first visible tab)
-    const activeTabBtn = document.querySelector('.tab-btn.is-active');
-    const isOfficer = role && ['gram_sabha', 'sdlc', 'dlc'].includes(role);
-    const targetDefaultTab = isOfficer ? tabOfficials : tabFile;
+    // If leaving Atlas tab, stop Atlas polling
+    if (previousTabId === "atlas" && tabId !== "atlas") {
+      if (window.Atlas && typeof window.Atlas.onTabInactive === "function") {
+        window.Atlas.onTabInactive();
+      }
+    }
 
-    const isCurrentActiveForbidden = !activeTabBtn || activeTabBtn.style.display === 'none' || activeTabBtn.hidden;
-    if (isCurrentActiveForbidden || (isOfficer && activeTabBtn.dataset.tab !== 'officials' && activeTabBtn.dataset.tab !== 'atlas')) {
-      if (targetDefaultTab) {
-        targetDefaultTab.click();
+    // Update tab button states
+    const allTabBtns = document.querySelectorAll(".tab-nav .tab-btn");
+    allTabBtns.forEach((b) => {
+      const isCurrent = b.dataset.tab === tabId;
+      b.classList.toggle("is-active", isCurrent);
+      b.setAttribute("aria-selected", isCurrent ? "true" : "false");
+    });
+
+    // Update panel states strictly by ID
+    const allPanels = document.querySelectorAll(".tab-panel");
+    allPanels.forEach((p) => {
+      const isCurrent = p.id === `tab-${tabId}`;
+      p.classList.toggle("is-active", isCurrent);
+      p.hidden = !isCurrent;
+    });
+
+    // Lazy initialization & guards based on role and tab
+    const isOfficer = ["gram_sabha", "sdlc", "dlc"].includes(effectiveRole);
+
+    if (tabId === "myclaims" && !isOfficer && typeof window.loadMyClaims === "function") {
+      window.loadMyClaims();
+    }
+    if (tabId === "officials" && isOfficer) {
+      if (window.officials && typeof window.officials.refreshOfficialsTabView === "function") {
+        window.officials.refreshOfficialsTabView();
+      }
+    }
+    if (tabId === "atlas" && isOfficer) {
+      if (window.Atlas && typeof window.Atlas.onTabActive === "function") {
+        window.Atlas.onTabActive();
       }
     }
   }
+
+  // Expose tab functions globally
+  window.renderTabsForRole = renderTabsForRole;
+  window.switchTab = switchTab;
+
 
   /* ---------------- login modal ---------------- */
   const loginOverlay = document.getElementById("loginOverlay");
@@ -277,12 +285,6 @@
       }
       setSession({ token: data.token, role: data.role, displayName: data.displayName });
       closeLoginModal();
-      
-      if (data.role === 'applicant') {
-        document.querySelector('.tab-btn[data-tab="myclaims"]')?.click();
-      } else {
-        document.querySelector('.tab-btn[data-tab="officials"]')?.click();
-      }
     } catch (err) {
       loginError.textContent = "Could not reach the server. Please try again.";
       loginError.hidden = false;
@@ -293,6 +295,7 @@
 
   document.getElementById("logoutBtn")?.addEventListener("click", async () => {
     await authFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    currentActiveTabId = null;
     setSession(null);
   });
 
