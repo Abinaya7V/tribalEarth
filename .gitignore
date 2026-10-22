@@ -1,0 +1,9 @@
+
+server/demo-data/
+server/data/claims.json.bak
+*.bak
+*.db
+*.db-shm
+*.db-wal
+atlas-access.log
+tribalEarth_BACKUP_*/
