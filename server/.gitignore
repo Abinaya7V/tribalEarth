@@ -7,3 +7,5 @@ data/uploads/*
 !data/uploads/.gitkeep
 data/claims.json*
 .env
+
+tribalEarth_BACKUP_*/
