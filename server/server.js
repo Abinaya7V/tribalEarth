@@ -60,22 +60,13 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 const DATA_DIR = path.join(__dirname, "data");
-const CLAIMS_FILE = path.join(DATA_DIR, "claims.json");
 const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 
 // ---------- bootstrap storage ----------
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-if (!fs.existsSync(CLAIMS_FILE)) fs.writeFileSync(CLAIMS_FILE, "[]", "utf-8");
 
-function readClaims() {
-  return JSON.parse(fs.readFileSync(CLAIMS_FILE, "utf-8"));
-}
-function writeClaims(claims) {
-  const tmp = CLAIMS_FILE + ".tmp";
-  fs.writeFileSync(tmp, JSON.stringify(claims, null, 2), "utf-8");
-  fs.renameSync(tmp, CLAIMS_FILE);
-}
+const { readClaims, writeClaims } = require("./services/db");
 
 // A1. Claim ownership migration
 function migrateLegacyClaims() {
@@ -758,8 +749,16 @@ app.post("/api/claims/:id/documents/:index/classify", requireStageRole, async (r
     village: claim.village,
   });
 
-  doc.review = {
-    ...(doc.review || {}),
+  // Re-read claims fresh after the OCR await (which can take up to 20s) so any
+  // decisions made on this claim or other claims during the wait are not overwritten.
+  const freshClaims = readClaims();
+  const freshClaim = freshClaims.find((c) => c.claimId === req.params.id);
+  if (!freshClaim) return res.status(404).json({ error: "Claim not found." });
+  const freshDoc = freshClaim.documents?.[docIndex];
+  if (!freshDoc) return res.status(404).json({ error: "Document not found on this claim." });
+
+  freshDoc.review = {
+    ...(freshDoc.review || {}),
     extractedText: ocrResult.text,
     rule13: {
       categoryId: classification.categoryId,
@@ -770,11 +769,11 @@ app.post("/api/claims/:id/documents/:index/classify", requireStageRole, async (r
     nameMatch: classification.nameMatch,
     villageMatch: classification.villageMatch,
     classifiedAt: nowISO(),
-    officerConfirmed: doc.review?.officerConfirmed || false,
+    officerConfirmed: freshDoc.review?.officerConfirmed || false,
   };
 
-  writeClaims(claims);
-  res.json({ success: true, document: doc });
+  writeClaims(freshClaims);
+  res.json({ success: true, document: freshDoc });
 });
 
 /**
