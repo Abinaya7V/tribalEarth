@@ -32,8 +32,12 @@
 const path = require("path");
 const fs = require("fs");
 
-const CACHE_DIR = path.join(__dirname, "..", "data", "tesseract-cache");
-if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
+function getCacheDir() {
+  const effectiveDataDir = process.env.DATA_DIR || path.join(__dirname, "..", "data");
+  const cacheDir = path.join(effectiveDataDir, "tesseract-cache");
+  if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
+  return cacheDir;
+}
 
 const OCR_TIMEOUT_MS = 20000;
 
@@ -68,7 +72,7 @@ async function extractText(filePath) {
     const { createWorker } = require("tesseract.js");
 
     worker = await withTimeout(
-      createWorker("eng", 1, { cachePath: CACHE_DIR, logger: () => {} }),
+      createWorker("eng", 1, { cachePath: getCacheDir(), logger: () => {} }),
       OCR_TIMEOUT_MS,
       "OCR engine failed to initialize in time (likely no internet access to fetch the language model on first use)."
     );

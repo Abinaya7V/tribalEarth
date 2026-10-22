@@ -275,3 +275,36 @@ TribalEarth AI includes automated boundary overlap and duplicate document detect
 - **Privacy Enforcement:** Applicants never see other claimants, competing claim IDs, or specific overlap flags; only a neutral advisory notice is provided.
 - **Step-by-Step Demo:** See [`DEMO_OVERCLAIM.md`](./DEMO_OVERCLAIM.md) for full walkthrough instructions.
 
+## Deploying to Render
+
+You can deploy TribalEarth AI as a **Web Service** on [Render](https://render.com).
+
+### Configuration
+- **Service Type:** Web Service
+- **Environment:** Node
+- **Root Directory:** *(leave blank — runs from repo root)*
+- **Build Command:** `cd server && npm install`
+- **Start Command:** `cd server && npm start`
+- **Health Check Path:** `/healthz`
+
+### Environment Variables
+| Variable | Suggested Value | Description |
+|---|---|---|
+| `NODE_VERSION` | `22.14.0` | Ensures Node 22 runtime for built-in `node:sqlite` |
+| `NODE_ENV` | `production` | Production environment mode |
+| `DATA_DIR` | `/var/data` (with disk) or default | Storage path for SQLite db, uploads, access logs, and OCR cache |
+| `SEED_DEMO` | `true` | *(Optional)* Seeds 13 demo claims and proof files on startup if the database is empty |
+| `BHASHINI_API_KEY` | *(Optional)* | Digital India Bhashini API key for speech services |
+| `BHASHINI_USER_ID` | *(Optional)* | Bhashini user ID |
+| `BHASHINI_SERVICE_ID` | *(Optional)* | Bhashini service ID |
+
+### Persistent Disk (Recommended for non-ephemeral storage)
+- If you attach a Render Persistent Disk, set the mount path to `/var/data` and add `DATA_DIR=/var/data` in your environment variables.
+- This ensures the SQLite database (`tribalearth.db`), uploaded proof files (`uploads/`), audit logs, and OCR cache persist across service deploys and restarts.
+
+### Important Notes & Honesty Contract
+- **Free Instance Tier:** Free Render web services use an ephemeral filesystem. Any data written without an attached persistent disk will be lost when the instance sleeps or restarts.
+- **In-Memory Sessions:** User authentication sessions are stored in memory and are reset whenever the server restarts or wakes from sleep.
+- **First-Time OCR:** Tesseract downloads language model files on its first OCR run; with a persistent disk, cached models in `$DATA_DIR/tesseract-cache` are reused.
+- **Demo Data & Accounts:** The pre-configured accounts (`applicant1`, `gramsabha1`, `sdlc1`, `dlc1`) and seeded claims are purely fictional demonstration data designed for testing FRA workflows. Real claimant information must never be entered into public demo instances.
+

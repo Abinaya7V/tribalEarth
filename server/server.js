@@ -57,6 +57,7 @@ process.on("unhandledRejection", (err) => {
 });
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 4000;
 
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
@@ -66,8 +67,35 @@ const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-const { readClaims, writeClaims } = require("./services/db");
+const { readClaims, writeClaims, getDb } = require("./services/db");
 const conflictService = require("./services/conflictService");
+const { seedDemo } = require("../scripts/seed-atlas-demo");
+
+// ---------- optional demo seeding for hosted demos ----------
+function checkAndSeedDemo() {
+  if (process.env.SEED_DEMO === "true") {
+    try {
+      const db = getDb();
+      const countRow = db.prepare("SELECT COUNT(*) AS count FROM claims;").get();
+      if (!countRow || countRow.count === 0) {
+        seedDemo(DATA_DIR, { force: false, allowRealData: true });
+        // Import seeded claims into SQLite claims table
+        const claimsJsonPath = path.join(DATA_DIR, "claims.json");
+        if (fs.existsSync(claimsJsonPath)) {
+          const raw = fs.readFileSync(claimsJsonPath, "utf-8");
+          const seeded = JSON.parse(raw);
+          writeClaims(seeded);
+          const migratedPath = claimsJsonPath + ".migrated";
+          fs.renameSync(claimsJsonPath, migratedPath);
+        }
+        console.log(`[seed-demo] Seeded demo claims into ${DATA_DIR} (SEED_DEMO=true on empty database)`);
+      }
+    } catch (err) {
+      console.error("[seed-demo] Demo seeding failed:", err.message);
+    }
+  }
+}
+checkAndSeedDemo();
 
 // A1. Claim ownership migration
 function migrateLegacyClaims() {
@@ -128,6 +156,11 @@ const ALLOWED_AUDIO_MIME_TYPES = [
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
+// ---------- health check ----------
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ ok: true });
+});
 
 // ---------- authentication ----------
 // See services/authService.js for the honesty contract on what this
@@ -804,7 +837,7 @@ app.post("/api/my/claims/:id/appeal", requireRole("applicant"), (req, res) => {
 
 function logAtlasAccess(user, claimId, action) {
   try {
-    const effectiveDataDir = process.env.DATA_DIR || path.join(__dirname, "data");
+    const effectiveDataDir = process.env.DATA_DIR || DATA_DIR;
     const logPath = path.join(effectiveDataDir, "atlas-access.log");
     const entry = JSON.stringify({
       ts: nowISO(),

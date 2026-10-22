@@ -12,54 +12,6 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
-const targetDir = process.argv[2];
-const force = process.argv.includes("--force");
-
-if (!targetDir) {
-  console.error("Error: target directory argument is required.");
-  console.error("Usage: node scripts/seed-atlas-demo.js <target_dir> [--force]");
-  process.exit(1);
-}
-
-const resolvedTarget = path.resolve(targetDir);
-const realDataDir = path.resolve(__dirname, "..", "server", "data");
-
-if (resolvedTarget === realDataDir) {
-  console.error("Refusing to run: target directory cannot be the real server/data directory!");
-  process.exit(1);
-}
-
-const targetClaimsFile = path.join(resolvedTarget, "claims.json");
-const targetUploadsDir = path.join(resolvedTarget, "uploads");
-
-if (fs.existsSync(targetClaimsFile) && !force) {
-  const stat = fs.statSync(targetClaimsFile);
-  if (stat.size > 0) {
-    console.error(`Refusing to overwrite existing non-empty file: ${targetClaimsFile}`);
-    console.error("Use --force to overwrite.");
-    process.exit(1);
-  }
-}
-
-fs.mkdirSync(resolvedTarget, { recursive: true });
-fs.mkdirSync(targetUploadsDir, { recursive: true });
-
-// Create 2 small placeholder proof files
-const sampleDoc1Content = "Sample Village Verification Record - TribalEarth AI Demo Proof Document A\n";
-const sampleDoc1Name = "demo_proof_doc_1.txt";
-const sampleDoc1Path = path.join(targetUploadsDir, sampleDoc1Name);
-fs.writeFileSync(sampleDoc1Path, sampleDoc1Content, "utf8");
-const sampleDoc1Hash = crypto.createHash("sha256").update(sampleDoc1Content).digest("hex");
-
-const sampleDoc2Content = "Sample Gram Sabha Resolution & Field Inspection Proof Document B\n";
-const sampleDoc2Name = "demo_proof_doc_2.txt";
-const sampleDoc2Path = path.join(targetUploadsDir, sampleDoc2Name);
-fs.writeFileSync(sampleDoc2Path, sampleDoc2Content, "utf8");
-const sampleDoc2Hash = crypto.createHash("sha256").update(sampleDoc2Content).digest("hex");
-
-const now = new Date();
-const isoNow = now.toISOString();
-
 // Helper to build rectangular polygon
 function makeBoxPolygon(minLng, minLat, maxLng, maxLat) {
   return {
@@ -74,9 +26,17 @@ function makeBoxPolygon(minLng, minLat, maxLng, maxLat) {
   };
 }
 
-// 13 fictional claims: 2 villages (Gondgaon & Salguda) in district Ranchi, Jharkhand
-// 11 with polygons, 2 points. All FRA statuses represented.
-const demoClaims = [
+// Create 2 small placeholder proof files
+const sampleDoc1Content = "Sample Village Verification Record - TribalEarth AI Demo Proof Document A\n";
+const sampleDoc1Name = "demo_proof_doc_1.txt";
+const sampleDoc1Hash = crypto.createHash("sha256").update(sampleDoc1Content).digest("hex");
+
+const sampleDoc2Content = "Sample Gram Sabha Resolution & Field Inspection Proof Document B\n";
+const sampleDoc2Name = "demo_proof_doc_2.txt";
+const sampleDoc2Hash = crypto.createHash("sha256").update(sampleDoc2Content).digest("hex");
+
+function getDemoClaims(isoNow) {
+  return [
   // 1. Submitted (Polygon) - Gondgaon
   {
     claimId: "FRA-2026-JH-DEMO01",
@@ -535,13 +495,81 @@ const demoClaims = [
       { stage: "DLC", action: "Approved", actor: "DLC Officer", note: "Approved", timestamp: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString() }
     ]
   }
-];
+  ];
+}
 
-fs.writeFileSync(targetClaimsFile, JSON.stringify(demoClaims, null, 2), "utf8");
+function seedDemo(dataDir, options = {}) {
+  const { force = false, allowRealData = false } = options;
+  if (!dataDir) {
+    throw new Error("dataDir is required for seedDemo.");
+  }
 
-console.log(`[seed-atlas-demo] Successfully seeded 13 demo claims to: ${targetClaimsFile}`);
-console.log(`[seed-atlas-demo] Created sample proof uploads in: ${targetUploadsDir}`);
-console.log("\nTo start the server using this demo dataset, run:");
-console.log(`  $env:DATA_DIR="${resolvedTarget}"; node server.js`);
-console.log("or in bash / macOS / Linux:");
-console.log(`  DATA_DIR="${resolvedTarget}" node server.js\n`);
+  const resolvedTarget = path.resolve(dataDir);
+  const realDataDir = path.resolve(__dirname, "..", "server", "data");
+
+  if (!allowRealData && resolvedTarget === realDataDir) {
+    throw new Error("Refusing to run: target directory cannot be the real server/data directory!");
+  }
+
+  const targetClaimsFile = path.join(resolvedTarget, "claims.json");
+  const targetUploadsDir = path.join(resolvedTarget, "uploads");
+
+  if (fs.existsSync(targetClaimsFile) && !force) {
+    const stat = fs.statSync(targetClaimsFile);
+    if (stat.size > 0) {
+      throw new Error(`Refusing to overwrite existing non-empty file: ${targetClaimsFile}. Use force to overwrite.`);
+    }
+  }
+
+  fs.mkdirSync(resolvedTarget, { recursive: true });
+  fs.mkdirSync(targetUploadsDir, { recursive: true });
+
+  // Create 2 small placeholder proof files
+  const sampleDoc1Content = "Sample Village Verification Record - TribalEarth AI Demo Proof Document A\n";
+  const sampleDoc1Name = "demo_proof_doc_1.txt";
+  const sampleDoc1Path = path.join(targetUploadsDir, sampleDoc1Name);
+  fs.writeFileSync(sampleDoc1Path, sampleDoc1Content, "utf8");
+
+  const sampleDoc2Content = "Sample Gram Sabha Resolution & Field Inspection Proof Document B\n";
+  const sampleDoc2Name = "demo_proof_doc_2.txt";
+  const sampleDoc2Path = path.join(targetUploadsDir, sampleDoc2Name);
+  fs.writeFileSync(sampleDoc2Path, sampleDoc2Content, "utf8");
+
+  const isoNow = new Date().toISOString();
+  const demoClaims = getDemoClaims(isoNow);
+
+  fs.writeFileSync(targetClaimsFile, JSON.stringify(demoClaims, null, 2), "utf8");
+
+  return {
+    claimsCount: demoClaims.length,
+    claimsFile: targetClaimsFile,
+    uploadsDir: targetUploadsDir,
+  };
+}
+
+module.exports = { seedDemo };
+
+if (require.main === module) {
+  const targetDir = process.argv[2];
+  const force = process.argv.includes("--force");
+
+  if (!targetDir) {
+    console.error("Error: target directory argument is required.");
+    console.error("Usage: node scripts/seed-atlas-demo.js <target_dir> [--force]");
+    process.exit(1);
+  }
+
+  try {
+    const res = seedDemo(targetDir, { force });
+    const resolvedTarget = path.resolve(targetDir);
+    console.log(`[seed-atlas-demo] Successfully seeded ${res.claimsCount} demo claims to: ${res.claimsFile}`);
+    console.log(`[seed-atlas-demo] Created sample proof uploads in: ${res.uploadsDir}`);
+    console.log("\nTo start the server using this demo dataset, run:");
+    console.log(`  $env:DATA_DIR="${resolvedTarget}"; node server.js`);
+    console.log("or in bash / macOS / Linux:");
+    console.log(`  DATA_DIR="${resolvedTarget}" node server.js\n`);
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+}
