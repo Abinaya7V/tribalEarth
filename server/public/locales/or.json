@@ -4,7 +4,8 @@
     "sub": "ଜଙ୍ଗଲ ଅଧିକାର ଦାବି ପଞ୍ଜିକା",
     "nav": {
       "file": "ଦାବି ଦାଖଲ କରନ୍ତୁ",
-      "register": "ଦାବି ପଞ୍ଜିକା"
+      "register": "ଦାବି ପଞ୍ଜିକା",
+      "myclaims": "ମୋର ଦାବି"
     }
   },
   "stepper": {
@@ -193,5 +194,51 @@
       "skip": "ଏହି ପ୍ରଶ୍ନ ଛାଡ଼ନ୍ତୁ",
       "allSet": "ସବୁ ହୋଇଗଲା — ଆପଣଙ୍କ ଉତ୍ତରଗୁଡ଼ିକ ପୂର୍ବରୁ ପୂରଣ ହୋଇଯାଇଛି।"
     }
+  },
+  "myclaims": {
+    "title": "ମୋର ଦାବି",
+    "subtitle": "ଆପଣଙ୍କ ଦାଖଲ ହୋଇଥିବା ଦାବିର ସ୍ଥିତି ଯାଞ୍ଚ କରନ୍ତୁ",
+    "loading": "ଆପଣଙ୍କ ଦାବି ଲୋଡ୍ ହେଉଛି…",
+    "empty": "କୌଣସି ଦାବି ମିଳିଲା ନାହିଁ।",
+    "village": "ଗ୍ରାମ",
+    "stage": "ବର୍ତ୍ତମାନର ପର୍ଯ୍ୟାୟ",
+    "status": "ସ୍ଥିତି",
+    "statusSubmitted": "ଦାଖଲ ହୋଇଛି",
+    "statusUnderReview": "ସମୀକ୍ଷାଧୀନ",
+    "statusApproved": "ଅନୁମୋଦିତ",
+    "statusRejected": "ପ୍ରତ୍ୟାଖ୍ୟାତ",
+    "statusEscalated": "DLC କୁ ପଠାଗଲା",
+    "statusAppealed": "ଅପିଲ୍ କରାଗଲା",
+    "descSubmitted": "ଆପଣଙ୍କ ଦାବି ଗ୍ରାମସଭାରେ ଦାଖଲ ହୋଇଛି ଏବଂ ଯାଞ୍ଚ ପାଇଁ ଅପେକ୍ଷା କରାଯାଇଛି।",
+    "descUnderReview": "ଆପଣଙ୍କ ଦାବି ବର୍ତ୍ତମାନ ଏହି ପର୍ଯ୍ୟାୟରେ ସମୀକ୍ଷାଧୀନ ଅଛି।",
+    "descApproved": "ଆପଣଙ୍କ ଦାବି ଅନୁମୋଦିତ ହୋଇଛି ଏବଂ ଜଙ୍ଗଲ ଅଧିକାର ପ୍ରଦାନ କରାଯାଇଛି।",
+    "descRejected": "ଆପଣଙ୍କ ଦାବି ଏହି ପର୍ଯ୍ୟାୟରେ ପ୍ରତ୍ୟାଖ୍ୟାନ କରାଯାଇଛି।",
+    "descEscalated": "ଆପଣଙ୍କ ଦାବି ଚୂଡ଼ାନ୍ତ ନିଷ୍ପତ୍ତି ପାଇଁ ଜିଲ୍ଲା ସ୍ତରୀୟ କମିଟି (DLC) କୁ ପଠାଯାଇଛି।",
+    "descAppealed": "ଆପଣଙ୍କ ଅପିଲ୍ ଦାଖଲ ହୋଇଛି ଏବଂ SDLC ଦ୍ୱାରା ବିଚାରାଧୀନ ଅଛି।",
+    "stageGramSabha": "ଗ୍ରାମସଭା",
+    "stageSdlc": "SDLC",
+    "stageDlc": "DLC",
+    "progressTitle": "ସମୀକ୍ଷା ପ୍ରଗତି",
+    "statusTitle": "ବର୍ତ୍ତମାନର ସ୍ଥିତି",
+    "rejectedBy": "ଦ୍ୱାରା ପ୍ରତ୍ୟାଖ୍ୟାତ",
+    "readAloud": "ପଢ଼ି ଶୁଣାନ୍ତୁ",
+    "priorRejectionTitle": "ପୂର୍ବ SDLC ପ୍ରତ୍ୟାଖ୍ୟାନ ଟିପ୍ପଣୀ",
+    "appealEligible": "ଅପିଲ୍ ପାଇଁ ଯୋଗ୍ୟ",
+    "appealNotice": "୬୦ ଦିନ ମଧ୍ୟରେ ଗ୍ରାମସଭା ପ୍ରତ୍ୟାଖ୍ୟାନ ବିରୁଦ୍ଧରେ SDLC ରେ ଅପିଲ୍ କରିବାର ଅଧିକାର ଆପଣଙ୍କର ଅଛି।",
+    "appealDeadline": "ଅପିଲ୍ ଶେଷ ତାରିଖ",
+    "fileAppealBtn": "ଅପିଲ୍ ଦାଖଲ କରନ୍ତୁ",
+    "appealFiledTitle": "ଅପିଲ୍ ଦାଖଲ ହୋଇଛି",
+    "appealGrounds": "ଆଧାର",
+    "filedOn": "ଦାଖଲ ତାରିଖ",
+    "claimDetails": "ଦାବି ବିବରଣୀ",
+    "supportingDocs": "ସହାୟକ ଦସ୍ତାବିଜ",
+    "noDocs": "କୌଣସି ଦସ୍ତାବିଜ ସଂଲଗ୍ନ ହୋଇନାହିଁ",
+    "auditTrail": "ଅଡିଟ୍ ଟ୍ରେଲ୍",
+    "claimType": "ପ୍ରକାର",
+    "cultivationYears": "ଚାଷର ବର୍ଷ",
+    "location": "ସ୍ଥାନ",
+    "locationNotProvided": "ପ୍ରଦାନ କରାଯାଇ ନାହିଁ",
+    "errorLoading": "ଦାବି ଲୋଡ୍ କରିବାରେ ତ୍ରୁଟି।",
+    "errorLoadingDetail": "ଦାବି ବିବରଣୀ ଲୋଡ୍ କରିବାରେ ବିଫଳ।"
   }
 }

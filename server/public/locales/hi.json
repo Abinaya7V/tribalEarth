@@ -4,7 +4,8 @@
     "sub": "वन अधिकार दावा रजिस्टर",
     "nav": {
       "file": "दावा दायर करें",
-      "register": "दावा रजिस्टर"
+      "register": "दावा रजिस्टर",
+      "myclaims": "मेरे दावे"
     }
   },
   "stepper": {
@@ -193,5 +194,51 @@
       "skip": "यह सवाल छोड़ें",
       "allSet": "सब हो गया — आपके उत्तर पहले ही भर दिए गए हैं।"
     }
+  },
+  "myclaims": {
+    "title": "मेरे दावे",
+    "subtitle": "अपने जमा किए गए दावों की स्थिति ट्रैक करें",
+    "loading": "आपके दावे लोड हो रहे हैं…",
+    "empty": "कोई दावा नहीं मिला।",
+    "village": "ग्राम",
+    "stage": "वर्तमान चरण",
+    "status": "स्थिति",
+    "statusSubmitted": "जमा किया गया",
+    "statusUnderReview": "समीक्षाधीन",
+    "statusApproved": "स्वीकृत",
+    "statusRejected": "अस्वीकृत",
+    "statusEscalated": "DLC को भेजा गया",
+    "statusAppealed": "अपील की गई",
+    "descSubmitted": "आपका दावा ग्राम सभा में जमा कर दिया गया है और सत्यापन की प्रतीक्षा कर रहा है।",
+    "descUnderReview": "आपका दावा वर्तमान में इस चरण में समीक्षाधीन है।",
+    "descApproved": "आपका दावा स्वीकृत हो गया है और वन अधिकार प्रदान कर दिया गया है।",
+    "descRejected": "आपका दावा इस चरण में अस्वीकृत कर दिया गया था।",
+    "descEscalated": "आपका दावा अंतिम निर्णय के लिए जिला स्तरीय समिति (DLC) को भेज दिया गया है।",
+    "descAppealed": "आपकी अपील दायर कर दी गई है और वर्तमान में SDLC द्वारा विचाराधीन है।",
+    "stageGramSabha": "ग्राम सभा",
+    "stageSdlc": "SDLC",
+    "stageDlc": "DLC",
+    "progressTitle": "समीक्षा प्रगति",
+    "statusTitle": "वर्तमान स्थिति",
+    "rejectedBy": "द्वारा अस्वीकृत",
+    "readAloud": "बोलकर सुनें",
+    "priorRejectionTitle": "पिछली SDLC अस्वीकृति टिप्पणी",
+    "appealEligible": "अपील के लिए पात्र",
+    "appealNotice": "आपको 60 दिनों के भीतर ग्राम सभा की अस्वीकृति के खिलाफ SDLC में अपील करने का अधिकार है।",
+    "appealDeadline": "अपील की अंतिम तिथि",
+    "fileAppealBtn": "अपील दायर करें",
+    "appealFiledTitle": "अपील दायर की गई",
+    "appealGrounds": "आधार",
+    "filedOn": "दायर करने की तिथि",
+    "claimDetails": "दावा विवरण",
+    "supportingDocs": "सहायक दस्तावेज़",
+    "noDocs": "कोई दस्तावेज़ संलग्न नहीं है",
+    "auditTrail": "ऑडिट ट्रेल",
+    "claimType": "प्रकार",
+    "cultivationYears": "खेती के वर्ष",
+    "location": "स्थान",
+    "locationNotProvided": "प्रदान नहीं किया गया",
+    "errorLoading": "दावे लोड करने में त्रुटि।",
+    "errorLoadingDetail": "दावा विवरण लोड करने में विफल।"
   }
 }

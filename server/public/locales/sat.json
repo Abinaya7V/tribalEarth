@@ -4,7 +4,8 @@
     "sub": "ᱵᱤᱨ ᱟᱹᱭᱫᱟᱹᱨᱤ ᱫᱟᱵᱤ ᱨᱮᱡᱤᱥᱴᱟᱨ",
     "nav": {
       "file": "ᱫᱟᱵᱤ ᱮᱢ",
-      "register": "ᱫᱟᱵᱤ ᱨᱮᱡᱤᱥᱴᱟᱨ"
+      "register": "ᱫᱟᱵᱤ ᱨᱮᱡᱤᱥᱴᱟᱨ",
+      "myclaims": "ᱤᱧᱟᱜ ᱫᱟᱵᱤ ᱠᱚ"
     }
   },
   "stepper": {
@@ -193,5 +194,51 @@
       "skip": "ᱱᱚᱶᱟ ᱠᱩᱞᱤ ᱮᱨᱟᱹ ᱛᱟᱦᱮᱸ ᱢᱮ",
       "allSet": "ᱡᱷᱚᱛᱚ ᱦᱩᱭ ᱮᱱᱟ — ᱟᱢᱟᱜ ᱠᱩᱞᱤ ᱠᱚ ᱱᱤᱛᱚᱜ ᱛᱟᱦᱮᱸ ᱯᱮᱨᱮᱡ ᱦᱩᱭ ᱮᱱᱟ।"
     }
+  },
+  "myclaims": {
+    "title": "ᱤᱧᱟᱜ ᱫᱟᱵᱤ ᱠᱚ",
+    "subtitle": "ᱮᱢ ᱟᱠᱟᱱ ᱫᱟᱵᱤ ᱨᱮᱱᱟᱜ ᱦᱟᱞᱚᱛ ᱧᱮᱞ ᱢᱮ",
+    "loading": "ᱟᱢᱟᱜ ᱫᱟᱵᱤ ᱠᱚ ᱞᱳᱰᱚᱜ ᱠᱟᱱᱟ…",
+    "empty": "ᱪᱮᱫ ᱫᱟᱵᱤ ᱦᱚᱸ ᱵᱟᱝ ᱧᱟᱢ ᱞᱮᱱᱟ᱾",
+    "village": "ᱟᱹᱛᱩ",
+    "stage": "ᱱᱤᱛᱚᱜᱟᱜ ᱛᱷᱚᱠ",
+    "status": "ᱦᱟᱞᱚᱛ",
+    "statusSubmitted": "ᱮᱢ ᱟᱠᱟᱱᱟ",
+    "statusUnderReview": "ᱵᱤᱪᱟᱹᱨᱚᱜ ᱠᱟᱱᱟ",
+    "statusApproved": "ᱢᱟᱱᱟᱣ ᱮᱱᱟ",
+    "statusRejected": "ᱵᱟᱹᱛᱤᱞ ᱮᱱᱟ",
+    "statusEscalated": "DLC ᱛᱮ ᱠᱩᱞ ᱮᱱᱟ",
+    "statusAppealed": "ᱟᱯᱤᱞ ᱟᱠᱟᱱᱟ",
+    "descSubmitted": "ᱟᱢᱟᱜ ᱫᱟᱵᱤ ᱜᱨᱟᱢ ᱥᱚᱵᱷᱟ ᱨᱮ ᱮᱢ ᱟᱠᱟᱱᱟ ᱟᱨ ᱡᱟᱸᱪ ᱞᱟᱹᱜᱤᱫ ᱛᱟᱺᱜᱤ ᱨᱮ ᱢᱮᱱᱟᱜᱼᱟ᱾",
+    "descUnderReview": "ᱟᱢᱟᱜ ᱫᱟᱵᱤ ᱱᱤᱛᱚᱜ ᱱᱚᱶᱟ ᱛᱷᱚᱠ ᱨᱮ ᱵᱤᱪᱟᱹᱨᱚᱜ ᱠᱟᱱᱟ᱾",
+    "descApproved": "ᱟᱢᱟᱜ ᱫᱟᱵᱤ ᱢᱟᱱᱟᱣ ᱮᱱᱟ ᱟᱨ ᱵᱤᱨ ᱟᱹᱭᱫᱟᱹᱨᱤ ᱮᱢ ᱮᱱᱟ᱾",
+    "descRejected": "ᱟᱢᱟᱜ ᱫᱟᱵᱤ ᱱᱚᱶᱟ ᱛᱷᱚᱠ ᱨᱮ ᱵᱟᱹᱛᱤᱞ ᱞᱮᱱᱟ᱾",
+    "descEscalated": "ᱢᱩᱪᱟᱹᱫ ᱯᱷᱟᱭᱥᱟᱞᱟ ᱞᱟᱹᱜᱤᱫ ᱟᱢᱟᱜ ᱫᱟᱵᱤ DLC ᱴᱷᱮᱱ ᱠᱩᱞ ᱟᱠᱟᱱᱟ᱾",
+    "descAppealed": "ᱟᱢᱟᱜ ᱟᱯᱤᱞ ᱮᱢ ᱟᱠᱟᱱᱟ ᱟᱨ SDLC ᱨᱮ ᱵᱤᱪᱟᱹᱨᱚᱜ ᱠᱟᱱᱟ᱾",
+    "stageGramSabha": "ᱜᱨᱟᱢ ᱥᱚᱵᱷᱟ",
+    "stageSdlc": "SDLC",
+    "stageDlc": "DLC",
+    "progressTitle": "ᱵᱤᱪᱟᱹᱨ ᱞᱟᱦᱟᱱᱛᱤ",
+    "statusTitle": "ᱱᱤᱛᱚᱜᱟᱜ ᱦᱟᱞᱚᱛ",
+    "rejectedBy": "ᱫᱟᱨᱟᱭ ᱛᱮ ᱵᱟᱹᱛᱤᱞ ᱟᱠᱟᱱᱟ",
+    "readAloud": "ᱯᱟᱲᱦᱟᱣ ᱠᱟᱛᱮ ᱟᱸᱡᱚᱢ",
+    "priorRejectionTitle": "ᱢᱟᱬᱟᱝ SDLC ᱵᱟᱹᱛᱤᱞ ᱚᱞ",
+    "appealEligible": "ᱟᱯᱤᱞ ᱞᱟᱹᱜᱤᱫ ᱡᱚᱜᱽ",
+    "appealNotice": "᱖᱐ ᱢᱟᱦᱟᱸ ᱵᱷᱤᱛᱤᱨ ᱜᱨᱟᱢ ᱥᱚᱵᱷᱟ ᱵᱟᱹᱛᱤᱞ ᱵᱤᱨᱩᱫᱷ ᱨᱮ SDLC ᱨᱮ ᱟᱯᱤᱞ ᱨᱮᱱᱟᱜ ᱟᱹᱭᱫᱟᱹᱨᱤ ᱢᱮᱱᱟᱜᱼᱟ᱾",
+    "appealDeadline": "ᱟᱯᱤᱞ ᱢᱩᱪᱟᱹᱫ ᱢᱟᱦᱟᱸ",
+    "fileAppealBtn": "ᱟᱯᱤᱞ ᱮᱢ ᱢᱮ",
+    "appealFiledTitle": "ᱟᱯᱤᱞ ᱮᱢ ᱮᱱᱟ",
+    "appealGrounds": "ᱠᱟᱨᱚᱱ",
+    "filedOn": "ᱮᱢ ᱢᱟᱦᱟᱸ",
+    "claimDetails": "ᱫᱟᱵᱤ ᱵᱤᱵᱚᱨᱚᱱ",
+    "supportingDocs": "ᱜᱚᱲᱚ ᱫᱚᱞᱤᱞ ᱠᱚ",
+    "noDocs": "ᱪᱮᱫ ᱫᱚᱞᱤᱞ ᱦᱚᱸ ᱵᱟᱝ ᱡᱚᱲᱟᱣ ᱟᱠᱟᱱᱟ",
+    "auditTrail": "ᱚᱰᱤᱴ ᱴᱨᱮᱞ",
+    "claimType": "ᱞᱮᱠᱟᱱ",
+    "cultivationYears": "ᱪᱟᱥ ᱥᱮᱨᱢᱟ",
+    "location": "ᱴᱷᱟᱶ",
+    "locationNotProvided": "ᱵᱟᱝ ᱮᱢ ᱟᱠᱟᱱᱟ",
+    "errorLoading": "ᱫᱟᱵᱤ ᱞᱳᱰ ᱨᱮ ᱵᱷᱩᱞ ᱦᱩᱭ ᱮᱱᱟ᱾",
+    "errorLoadingDetail": "ᱫᱟᱵᱤ ᱵᱤᱵᱚᱨᱚᱱ ᱞᱳᱰ ᱵᱟᱝ ᱦᱩᱭ ᱞᱮᱱᱟ᱾"
   }
 }

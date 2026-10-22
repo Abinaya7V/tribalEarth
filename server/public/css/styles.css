@@ -1363,3 +1363,101 @@ html[dir="rtl"] .site-header .tab-nav {
   font-size: 13.5px;
   color: var(--ink-soft);
 }
+
+/* Progress Tracker for My Claims Detail View */
+.progress-tracker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 0 24px;
+  padding: 16px 20px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+}
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  text-align: center;
+}
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  background: var(--paper);
+  border: 2px solid var(--line);
+  color: var(--ink-faint);
+  transition: all .2s var(--ease);
+}
+.step-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.progress-step.is-active .step-circle {
+  border-color: var(--ochre);
+  background: var(--ochre-soft);
+  color: #8A5F1F;
+}
+.progress-step.is-active .step-label {
+  color: var(--ink);
+}
+.progress-step.is-completed .step-circle {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: #fff;
+}
+.progress-step.is-completed .step-label {
+  color: var(--forest-dark);
+}
+.progress-step.is-rejected .step-circle {
+  border-color: var(--clay);
+  background: var(--clay);
+  color: #fff;
+}
+.progress-step.is-rejected .step-label {
+  color: var(--clay);
+}
+.progress-line {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  margin: 0 4px 20px 4px;
+}
+.progress-line.is-completed {
+  background: var(--forest);
+}
+
+.plain-status-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--forest);
+  border-radius: var(--radius-s);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.plain-status-card.status-rejected {
+  border-left-color: var(--clay);
+}
+.plain-status-card.status-under-review,
+.plain-status-card.status-escalated-to-dlc {
+  border-left-color: var(--ochre);
+}
+.plain-status-card h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.plain-status-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
