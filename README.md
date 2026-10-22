@@ -19,16 +19,22 @@ as a claim moves through those exact stages.
 
 ## Tech stack
 
-- **Backend:** Node.js + Express, file-based JSON storage (`server/data/claims.json`)
-  so there's zero database setup required to run this locally. Swap this for
-  PostgreSQL/PostGIS later without changing the API routes.
+- **Backend:** Node.js (>= 22.13 recommended) + Express, SQLite database storage (`server/data/tribalearth.db`)
+  using Node's built-in `node:sqlite` (DatabaseSync) with WAL mode and diffed writes.
 - **Frontend:** plain HTML/CSS/JS — no build step, no framework, so it opens
   and runs instantly in VS Code with nothing but Node installed.
 - **File uploads:** handled by Multer, saved to `server/data/uploads/`.
 
+## Prerequisites & Node version requirement
+
+- **Node.js:** version **22.13 or newer** is required for Node's built-in `node:sqlite`
+  (`DatabaseSync`) without experimental flags.
+  - If running on Node 22.0 to 22.12, start Node with `--experimental-sqlite`
+    (e.g., `node --experimental-sqlite server.js`).
+
 ## Running it in VS Code
 
-1. Open the `tribalearth-module1` folder in VS Code (`File → Open Folder…`).
+1. Open the repository root in VS Code (`File → Open Folder…`).
 2. Open a terminal in VS Code (`` Ctrl+` ``) and run:
 
    ```bash
@@ -40,24 +46,57 @@ as a claim moves through those exact stages.
 3. Open **http://localhost:4000** in your browser. That's it — one server
    serves both the API and the frontend, so there's nothing else to run.
 
-   If you'd rather auto-restart on file changes while developing, install
-   nodemon once (`npm install -D nodemon`) and run `npx nodemon server.js`
-   instead of `npm start`.
+## Running Tests
+
+Run the full integration test suite from the `server` directory:
+
+```bash
+cd server
+npm test
+```
+
+Tests use Node's built-in test runner (`node --test tests/`). The tests run standalone
+against the Express app using Supertest without requiring a manually running server.
+Alternatively, integration tests can target an external live server by setting the
+`API_BASE` environment variable (e.g. `API_BASE=http://localhost:4000 npm test`).
+
+## Storage & Database Management
+
+- **Database file:** `server/data/tribalearth.db` (SQLite with `PRAGMA journal_mode = WAL` and `PRAGMA foreign_keys = ON`).
+- **Automatic Migration:** On first startup, if the `claims` table is empty and `server/data/claims.json` exists and is non-empty, all claims are imported in a single atomic transaction and `claims.json` is renamed to `claims.json.migrated` (user data is never overwritten or deleted).
+- **Per-Claim Diffed Writes:** Every write transaction checks snapshots and only upserts claims that were created or modified, preventing long operations (such as 20s OCR classification) from overwriting concurrent decisions.
+- **How to Reset the Database:**
+  1. Stop the server (`Ctrl+C`).
+  2. Delete `server/data/tribalearth.db` (and any companion `tribalearth.db-wal` or `tribalearth.db-shm` files).
+  3. If you want to re-migrate from a JSON seed, rename or copy the JSON to `server/data/claims.json`.
+  4. Start the server (`npm start`). The database and schema will be re-created automatically.
 
 ## Project structure
 
 ```
-tribalearth-module1/
+tribalearth/
 └── server/
     ├── server.js              # Express app + all API routes
     ├── package.json
+    ├── services/
+    │   ├── db.js              # SQLite document storage & diffed writes
+    │   ├── authService.js     # Session & role authentication
+    │   ├── geoService.js      # Turf.js boundary validation
+    │   ├── ocrService.js      # Tesseract OCR extraction
+    │   └── documentClassificationService.js
     ├── data/
-    │   ├── claims.json        # claim records (auto-created, gitignored)
+    │   ├── tribalearth.db     # SQLite database (auto-created, gitignored)
     │   └── uploads/           # uploaded documents (gitignored)
+    ├── tests/
+    │   ├── index.js           # Test runner entry point
+    │   ├── api.test.js        # Authentication, decisions, appeals, map-check
+    │   ├── db.test.js         # SQLite migration, diffed writes, OCR re-read
+    │   └── geo.test.js        # Polygon validation, area, overlap flags
     └── public/
         ├── index.html
         ├── css/styles.css     # design tokens + all styling
-        └── js/app.js          # stepper, uploads, register, drawer logic
+        ├── js/app.js          # filing form, register ledger logic
+        └── js/myclaims.js     # applicant tracker, progress bar, appeals
 ```
 
 ## API reference
@@ -67,7 +106,7 @@ tribalearth-module1/
 | POST   | `/api/claims`                | File a new claim (multipart form, at Gram Sabha stage) |
 | GET    | `/api/claims`                | List claims — filters: `village`, `district`, `state`, `claimType`, `stage`, `status`, `q` |
 | GET    | `/api/claims/:id`            | Get one claim, including its full audit trail        |
-| PATCH  | `/api/claims/:id/advance`    | Move a claim to the next stage, appends an audit entry |
+| POST   | `/api/claims/:id/decision`   | Officer decision (Approve / Reject) with stage checks and audit |
 | GET    | `/api/stats`                 | Aggregate counts by stage and claim type              |
 
 ## Design notes

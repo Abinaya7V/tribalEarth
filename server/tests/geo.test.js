@@ -73,12 +73,12 @@ async function runTests() {
   // Security Tests
   console.log("Running security tests...");
   try {
-    const res = await request("http://localhost:4000")
+    const res = await request(process.env.API_BASE || app)
       .get("/api/claims/fake-id/geo")
       .expect(401);
     console.log("Security: Unauthenticated access blocked (401).");
   } catch(e) {
-    console.log("Security test skipped or failed (server might not be running).", e.message);
+    console.log("Security test skipped or failed:", e.message);
   }
 }
 
